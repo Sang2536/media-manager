@@ -1,14 +1,22 @@
-<!-- resources/views/layouts/app.blade.php -->
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Media Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-{{--    <link href="../../css/app.css" rel="stylesheet">--}}
+    <meta charset="UTF-8">
+    <title>@yield('title', 'Media Manager')</title>
     @vite('resources/css/app.css')
 </head>
-<body>
-    @yield('content')
+<body class="bg-gray-100 text-gray-800">
+<div class="flex min-h-screen">
+    {{-- Sidebar trái: 1/4 --}}
+    @include('layouts.sidebar-left')
+
+    {{-- Nội dung chính: 3/4 --}}
+    <main class="w-3/4 p-6">
+        @yield('content')
+    </main>
+
+    @stack('scripts')
+</div>
 </body>
 </html>
+

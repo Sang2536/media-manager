@@ -13,6 +13,6 @@ class MediaTag extends Model
     ];
 
     public function files() {
-        return $this->belongsToMany(MediaFile::class, 'media_file_tag');
+        return $this->belongsToMany(MediaFile::class, 'media_file_tag', 'media_tag_id', 'media_file_id');
     }
 }

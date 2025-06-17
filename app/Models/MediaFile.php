@@ -29,7 +29,7 @@ class MediaFile extends Model
     }
 
     public function tags() {
-        return $this->belongsToMany(MediaTag::class, 'media_file_tag');
+        return $this->belongsToMany(MediaTag::class, 'media_file_tag', 'media_file_id', 'media_tag_id');
     }
 
     public function metadata() {
