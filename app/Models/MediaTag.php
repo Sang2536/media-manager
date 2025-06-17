@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MediaTag extends Model
 {
-    protected $table = 'media-tags';
+    protected $table = 'media_tags';
 
     protected $fillable = [
         'name'
