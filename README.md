@@ -167,6 +167,7 @@
     spatie/image-optimizer	            Nén ảnh
     spatie/laravel-permission	        Phân quyền
     barryvdh/laravel-elfinder	        UI Media Manager (nếu muốn có sẵn)
+    tailwindcss                         CSS Framework
 
 
 ##  10. Testing
