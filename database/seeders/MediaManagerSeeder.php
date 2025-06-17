@@ -51,7 +51,7 @@ class MediaManagerSeeder extends Seeder
                         'size' => rand(100_000, 1_000_000),
                         'path' => "media/{$folder->name}/file_$i.jpg",
                         'thumbnail_path' => "media/{$folder->name}/thumb_file_$i.jpg",
-                        'folder_id' => $folder->id,
+                        'media_folder_id' => $folder->id,
                         'is_public' => rand(0, 1),
                     ]);
 
