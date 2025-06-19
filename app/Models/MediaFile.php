@@ -18,6 +18,7 @@ class MediaFile extends Model
         'size',
         'path',
         'thumbnail_path',
+        'source_url',
         'media_folder_id',
         'is_public'
     ];

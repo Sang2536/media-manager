@@ -7,6 +7,42 @@ use Illuminate\Support\Facades\Session;
 
 class MediaFolderHelper
 {
+    public function saveFoldersFromBreadcrumb(string $breadcrumb, int $userId): MediaFolder
+    {
+        $parts = explode('/', $breadcrumb);
+        $parentId = null;
+        $currentFolder = null;
+
+        foreach ($parts as $name) {
+            $currentFolder = MediaFolder::firstOrCreate(
+                [
+                    'user_id'   => $userId,
+                    'name'      => $name,
+                    'parent_id' => $parentId,
+                ],
+                [
+                    'storage'   => 'local',
+                ]
+            );
+
+            $parentId = $currentFolder->id;
+        }
+
+        return $currentFolder; // trả về folder cuối cùng (Firefly)
+    }
+
+    public function getBreadcrumbFromAnyFolder(MediaFolder $folder): string
+    {
+        $names = [];
+
+        while ($folder) {
+            array_unshift($names, $folder->name);
+            $folder = $folder->parent;
+        }
+
+        return implode('/', $names);
+    }
+
     public function buildBreadcrumb($folderId)
     {
         $breadcrumb = [];
