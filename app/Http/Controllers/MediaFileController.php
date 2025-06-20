@@ -43,7 +43,10 @@ class MediaFileController extends Controller
      */
     public function create()
     {
-        //
+        $folders = MediaFolder::where('parent_id', null)->get();
+        $tags = MediaTag::all();
+
+        return view('media.files.create', compact('folders', 'tags'));
     }
 
     /**

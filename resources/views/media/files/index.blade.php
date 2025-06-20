@@ -4,59 +4,74 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {{-- Header --}}
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-16 flex items-center gap-2">📁 Danh sách Media</h1>
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                📁 Danh sách Media
+            </h1>
 
-            <div class="flex flex-col lg:flex-row items-center justify-between gap-4 mb-16 max-w-full">
-                <form action="{{ route('media-files.store') }}"
-                      method="POST"
-                      enctype="multipart/form-data"
-                      class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-3/4">
-                    @csrf
-
-                    {{-- Chọn thư mục --}}
-                    <div class="w-full sm:w-auto">
-                        <select name="folder_id"
-                                class="border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200 px-3 py-2 w-full sm:w-48"
-                                required>
-                            <option value="">-- Chọn thư mục --</option>
-                            {!! $htmlFolderSelect !!}
-{{--                            @foreach($folders as $folder)--}}
-{{--                                <option value="{{ $folder->id }}">{{ $folder->name }}</option>--}}
-{{--                            @endforeach--}}
-                        </select>
-                    </div>
-
-                    {{-- Chọn file --}}
-                    <div class="w-full sm:w-auto">
-                        <input type="file" name="file" id="file"
-                               class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200"
-                               required>
-                        @error('name')
-                        <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    {{-- Nút submit --}}
-                    <div>
-                        <button type="submit"
-                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                            💾 Lưu File
-                        </button>
-                    </div>
-                </form>
-
+            <div class="flex items-center justify-between flex-wrap gap-4 mb-8">
                 @php $view = request()->get('view', 'grid'); @endphp
+
+                {{-- Nhóm nút chuyển đổi view --}}
                 <div class="flex gap-2">
                     <a href="{{ route('media-files.index', ['view' => 'grid']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition
-                       {{ $view === 'grid' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                        🔳 Grid
+                       class="px-4 py-2 rounded-lg font-medium transition border
+               {{ $view === 'grid'
+                   ? 'bg-indigo-600 text-white border-indigo-600 shadow hover:bg-indigo-700'
+                   : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' }}">
+                        🟦 Lưới
                     </a>
                     <a href="{{ route('media-files.index', ['view' => 'list']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition
-                       {{ $view === 'list' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                        📄 List
+                       class="px-4 py-2 rounded-lg font-medium transition border
+               {{ $view === 'list'
+                   ? 'bg-indigo-600 text-white border-indigo-600 shadow hover:bg-indigo-700'
+                   : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' }}">
+                        📋 Danh sách
                     </a>
+                </div>
+
+                {{-- Nhóm nút chức năng --}}
+                <div class="flex gap-2">
+                    <button type="button"
+                            class="inline-flex items-center gap-2 border border-yellow-500 bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600 transition shadow">
+                        🧹 Bộ lọc
+                    </button>
+                    <button type="button"
+                            class="inline-flex items-center gap-2 border border-b-blue-500 bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition shadow">
+                        🔄 Làm mới
+                    </button>
+                    <a href="{{ route('media-files.create') }}"
+                       class="inline-flex items-center gap-2 border border-green-600 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition shadow">
+                        ➕ Thêm
+                    </a>
+                    <a href="{{ route('media-files.create') }}"
+                       class="inline-flex items-center gap-2 border border-red-600 bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition shadow">
+                        🗑️ Xóa
+                    </a>
+
+                    <!-- Nút Dropdown -->
+                    <div class="relative">
+                        <button id="dropdownBtn"
+                                class="inline-flex items-center gap-2 border border-gray-400 bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition shadow">
+                            ⚙️ Tác vụ khác
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="dropdownMenu"
+                             class="absolute right-0 z-50 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg p-2 hidden">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🔄 Làm mới</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">📥 Tải xuống</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">📂 Chuyển thư mục</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">✅ Chọn tất cả</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🧾 Chi tiết</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🖼 Xem nhanh</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">📌 Ghim</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">📤 Xuất ảnh</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">⚙️ Cài đặt hiển thị</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">♿ Chế độ truy cập</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -206,7 +221,7 @@
         </div>
     </div>
 
-    <!-- Modal wrapper -->
+    <!-- Modal Show Media wrapper -->
     <div id="fileModal" class="hidden relative z-10" aria-labelledby="dialog-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen">
             <!-- Modal content -->
@@ -222,6 +237,7 @@
 @endsection
 
 @push('scripts')
+{{--  JS Modal Show Media  --}}
     <script>
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text)
@@ -251,4 +267,21 @@
             document.getElementById('fileModal').classList.add('hidden');
         }
     </script>
+
+{{--  JS Button Dropdown  --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('dropdownBtn');
+        const menu = document.getElementById('dropdownMenu');
+
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function () {
+            menu.classList.add('hidden');
+        });
+    });
+</script>
 @endpush

@@ -62,7 +62,7 @@ class MediaFolderHelper
         //
     }
 
-    public static function renderFolderOptions($userId, $prefix = '')
+    public static function renderFolderOptions(?int $userId, $prefix = '')
     {
         $folders = MediaFolder::where('user_id', $userId)->get();
 
@@ -72,7 +72,7 @@ class MediaFolderHelper
             if (! $folder->parent_id)
                 $html .= '<option value="' . $folder->id . '">' . $prefix . '📁 ' . $folder->name . '</option>';
             else
-                $html .= '<option value="' . $folder->id . '">' . $prefix . '— ' . $folder->name . '</option>';
+                $html .= '<option value="' . $folder->id . '">' . $prefix . '-—' . $folder->name . '</option>';
         }
 
         return $html;
