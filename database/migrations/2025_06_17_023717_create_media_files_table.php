@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('size'); // tính bằng byte
             $table->string('path'); // nơi lưu trữ file
             $table->string('thumbnail_path')->nullable(); // ảnh nhỏ
+            $table->string('source_url')->nullable(); // nguồn ảnh
             $table->foreignId('media_folder_id')->nullable()->constrained('media_folders')->onDelete('set null');
             $table->boolean('is_public')->default(false);
             $table->timestamps();
