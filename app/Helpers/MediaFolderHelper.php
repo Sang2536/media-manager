@@ -62,17 +62,34 @@ class MediaFolderHelper
         //
     }
 
-    public static function renderFolderOptions(?int $userId, $prefix = '')
+    public static function renderFolderOptions(?int $userId, ?int $forderId = null, $prefix = '')
     {
-        $folders = MediaFolder::where('user_id', $userId)->get();
+        //  Get Folder
+        $folders = new MediaFolder();
 
+        if ($userId) {
+            $folders = $folders->where('user_id', $userId);
+        }
+
+        $parentFolder = $folders->where('parent_id', null)->get();
+
+        //  Render HTML
         $html = '';
+        foreach ($parentFolder as $item) {
+            $selected = '';
+            if ($forderId && $item->id == $forderId) {
+                $selected = 'selected';
+            }
 
-        foreach ($folders as $folder) {
-            if (! $folder->parent_id)
-                $html .= '<option value="' . $folder->id . '">' . $prefix . '📁 ' . $folder->name . '</option>';
-            else
-                $html .= '<option value="' . $folder->id . '">' . $prefix . '-—' . $folder->name . '</option>';
+            $html .= '<option value="' . $item->id . '" ' . $selected . '>' . $prefix . '📁 ' . $item->name . '</option>';
+
+            foreach ($item->children as $childItem) {
+                if ($forderId && $childItem->id == $forderId) {
+                    $selected = 'selected';
+                }
+
+                $html .= '<option value="' . $childItem->id . '" ' . $selected . '>' . $prefix . '-—' . $childItem->name . ' -> (' . $childItem->path . ')</option>';
+            }
         }
 
         return $html;

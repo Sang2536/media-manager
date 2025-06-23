@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\MediaFolderHelper;
+use App\Http\Requests\MediaFileRequest;
 use App\Models\MediaFile;
 use App\Models\MediaFolder;
 use App\Models\MediaTag;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class MediaFileController extends Controller
 {
@@ -52,11 +51,14 @@ class MediaFileController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(MediaFileRequest $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpg,jpeg,png,gif,webp|max:5120', // 5MB
-            'folder_id' => 'required|exists:media_folders,id',
+            'file' => $request->file(), // 10MB
+            'original_name' => $request->original_name,
+            'folder_id' => $request->folder_id,
+            'tags' => $request->tags,
+            'metadata' => $request->metadata,
         ]);
 
         $file = $request->file('file');
@@ -110,9 +112,18 @@ class MediaFileController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(MediaFile $file)
     {
-        //
+        $userId = auth()->user()->id ?? null;
+
+        $folders = MediaFolder::where('parent_id', null)->get();
+        $optionSelect = $this->mediaFolderHelper->renderFolderOptions($userId, $file->folder->id);
+
+        $tags = MediaTag::all();
+        // Lấy các tag ID đã gắn với image
+        $selectedTags = $file->tags->pluck('id')->toArray();
+
+        return view('media.files.edit', compact('file', 'folders', 'optionSelect', 'tags', 'selectedTags'));
     }
 
     /**

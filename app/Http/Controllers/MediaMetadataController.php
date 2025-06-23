@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MediaMetadata;
 use Illuminate\Http\Request;
 
 class MediaMetadataController extends Controller
@@ -11,7 +12,9 @@ class MediaMetadataController extends Controller
      */
     public function index()
     {
-        //
+        $metadata = MediaMetadata::all();
+
+        return view('media.metadata.index', compact('metadata'));
     }
 
     /**

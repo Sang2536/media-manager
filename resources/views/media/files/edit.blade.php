@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Create Media')
+@section('title', 'Update Media')
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -8,27 +8,56 @@
 
 @section('content')
     <div class="max-w-3xl mx-auto py-8 px-4">
-        <h1 class="text-2xl font-bold mb-6">🆕 Thêm Media Mới</h1>
+        <h1 class="text-2xl font-bold mb-6">🆕 Cập nhật Media</h1>
 
-        <form action="{{ route('media-files.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('media-files.update', $file) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
-            {{-- File upload đẹp --}}
+            {{-- Show file dạng ảnh --}}
+            <div>
+                <img src="{{ $file->image_url }}"
+                     alt="{{ $file->original_name }}"
+                     class="w-full h-auto object-cover" />
+                <p class="text-sm text-gray-500">
+                    {{ asset($file->path) }}
+                </p>
+            </div>
+
+            {{-- File đã upload (Không thể upload lại file) --}}
             <div>
                 <label class="block font-semibold mb-1">📁 Chọn file <span class="text-red-500">*</span></label>
+
                 <div class="relative border border-gray-300 rounded-lg px-4 py-3 bg-white shadow-sm">
-                    <input type="file" name="file" required
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="text-gray-600 pointer-events-none">Chọn tệp từ máy tính...</div>
+
+                    {{-- Input upload (ẩn nhưng chiếm toàn bộ khu vực click) --}}
+{{--                    <input--}}
+{{--                        type="file"--}}
+{{--                        name="file"--}}
+{{--                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"--}}
+{{--                    >--}}
+
+                    {{-- Hiển thị tên file cũ nếu có --}}
+                    <div class="text-gray-600 pointer-events-none">
+                        {{ $file->filename ? "Đã tải: " . basename($file->filename) : "Chọn tệp từ máy tính..." }}
+                    </div>
                 </div>
+
+                {{-- Hiển thị xem trước nếu là ảnh (nếu muốn) --}}
+                @if(Str::startsWith($file->mime_type, 'image/') && Storage::exists($file->path))
+                    <div class="mt-3">
+                        <img src="{{ Storage::url($file->path) }}" class="w-32 h-auto rounded border shadow">
+                    </div>
+                @endif
             </div>
+
 
             {{-- Tên file gốc --}}
             <div>
                 <label class="block font-semibold mb-1">📝 Tên file (tùy chọn)</label>
                 <input type="text" name="original_name"
                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
-                       placeholder="Tên gợi nhớ cho file">
+                       placeholder="Tên gợi nhớ cho file"
+                        value="{{ $file->filename }}">
             </div>
 
             {{-- Chọn thư mục --}}
@@ -36,12 +65,7 @@
                 <label class="block font-semibold mb-1">📂 Thư mục</label>
                 <select name="folder_id" class="w-full border rounded px-3 py-2">
                     <option value="">-- Không có --</option>
-                    @foreach ($folders as $folder)
-                        <option value="{{$folder->id }}"> 📁 {{ $folder->name }}</option>
-                        @foreach ($folder->children as $folderChildren)
-                            <option value="{{$folderChildren->id }}"> -— {{ $folderChildren->name }} ({{ $folderChildren->path }})</option>
-                        @endforeach
-                    @endforeach
+                    {!! $optionSelect !!}
                 </select>
             </div>
 
@@ -50,7 +74,10 @@
                 <label class="block font-semibold mb-1">🏷️ Tags</label>
                 <select name="tags[]" id="tag-select" multiple class="w-full border rounded px-3 py-2">
                     @foreach ($tags as $tag)
-                        <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                        <option value="{{ $tag->id }}"
+                            {{ in_array($tag->id, $selectedTags) ? 'selected' : '' }}>
+                            {{ $tag->name }}
+                        </option>
                     @endforeach
                 </select>
             </div>

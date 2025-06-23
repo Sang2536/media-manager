@@ -1,5 +1,5 @@
 {{-- Sidebar trái --}}
-<aside class="w-1/4 bg-white border-r p-4">
+<aside class="w-1/4 bg-white border-r p-4 sticky top-0 h-screen">
     <h2 class="text-xl font-bold mb-6">📁 Media Manager</h2>
     <nav class="space-y-2">
 

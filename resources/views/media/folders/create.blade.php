@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Create Folder')
+
 @section('content')
     <div class="max-w-xl mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">➕ Tạo thư mục mới</h1>
