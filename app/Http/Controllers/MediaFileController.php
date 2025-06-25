@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\MediaFileData;
+use App\Helpers\MediaFileHelper;
 use App\Helpers\MediaFolderHelper;
 use App\Http\Requests\MediaFileRequest;
 use App\Models\MediaFile;
@@ -11,11 +13,9 @@ use Illuminate\Http\Request;
 
 class MediaFileController extends Controller
 {
-    protected $mediaFolderHelper;
-
-    public function __construct(MediaFolderHelper $mediaFolderHelper)
+    public function __construct()
     {
-        $this->mediaFolderHelper = $mediaFolderHelper;
+        //
     }
 
     /**
@@ -42,10 +42,15 @@ class MediaFileController extends Controller
      */
     public function create()
     {
+        $userId = auth()->user()->id ?? null;
+
         $folders = MediaFolder::where('parent_id', null)->get();
+
         $tags = MediaTag::all();
 
-        return view('media.files.create', compact('folders', 'tags'));
+        $renderFolderOptions = MediaFolderHelper::renderFolderOptions($userId, null, 'media_file');
+
+        return view('media.files.create', compact('folders', 'renderFolderOptions', 'tags'));
     }
 
     /**
@@ -53,44 +58,20 @@ class MediaFileController extends Controller
      */
     public function store(MediaFileRequest $request)
     {
-        $request->validate([
-            'file' => $request->file(), // 10MB
-            'original_name' => $request->original_name,
-            'folder_id' => $request->folder_id,
-            'tags' => $request->tags,
-            'metadata' => $request->metadata,
-        ]);
-
         $file = $request->file('file');
-        $folderId = $request->input('folder_id');
+        $folder = MediaFolder::findOrFail($request->input('folder_id'));
 
-        $originalName = $file->getClientOriginalName();
+        $path = MediaFileHelper::storeUploadedFile($file, $folder);
 
-        $pathInfo = pathinfo($originalName, PATHINFO_FILENAME);     //  Tách tên file mà không có phần đuôi (extension)
-        $normalized = \Normalizer::normalize($pathInfo, \Normalizer::FORM_KD);      //  normalize chuỗi về dạng chuẩn
-        $filename = str()->slug($normalized) . '.' . $file->getClientOriginalExtension();       //  Chuyển thành dạng url
+        $dto = new MediaFileData(
+            userId: auth()->id() ?? 1,
+            file: $file,
+            path: $path,
+            mediaFolderId: $folder->id
+        );
 
-        $mimeType = $file->getClientMimeType();
-        $size = $file->getSize();
-
-        $folder = MediaFolder::findOrFail($folderId);
-        $folderPath = 'media/' . $folder->name;     //  url của folder chứa file
-        $path = $file->storeAs($folderPath, $filename, 'public'); // lưu vào storage/app/public/media/{folder_id}
-
-        $mediaFile = MediaFile::create([
-            'user_id' => auth()->id() ?? 1,
-            'filename' => $filename,
-            'original_name' => $originalName,
-            'mime_type' => $mimeType,
-            'size' => $size,
-            'path' => $path,
-            'thumbnail_path' => null,
-            'media_folder_id' => $folderId,
-            'is_public' => true,
-        ]);
-
-        $tags = MediaTag::get();
-        $mediaFile->tags()->attach($tags->random(rand(1, 3))->pluck('id'));
+        $mediaFile = MediaFileHelper::createMediaFileFromDto($dto);
+        MediaFileHelper::attachRandomTags($mediaFile);
 
         return redirect()->route('media-files.index')->with('success', 'Media đã được tải lên');
     }
@@ -103,7 +84,7 @@ class MediaFileController extends Controller
         $view = $request->get('view');
 
         $fileData = MediaFile::findOrFail($file);
-        $breadcrumbs = $this->mediaFolderHelper->buildBreadcrumb($fileData->folder->id);
+        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($fileData->folder->id);
 
         return view('media.files.file-modal')
             ->with(['file' => $fileData, 'breadcrumbs' => $breadcrumbs, 'view' => $view]);
@@ -117,13 +98,15 @@ class MediaFileController extends Controller
         $userId = auth()->user()->id ?? null;
 
         $folders = MediaFolder::where('parent_id', null)->get();
-        $optionSelect = $this->mediaFolderHelper->renderFolderOptions($userId, $file->folder->id);
+
+        $renderFolderOptions = MediaFolderHelper::renderFolderOptions($userId, $file->folder->id, 'media_file');
 
         $tags = MediaTag::all();
+
         // Lấy các tag ID đã gắn với image
         $selectedTags = $file->tags->pluck('id')->toArray();
 
-        return view('media.files.edit', compact('file', 'folders', 'optionSelect', 'tags', 'selectedTags'));
+        return view('media.files.edit', compact('file', 'folders', 'renderFolderOptions', 'tags', 'selectedTags'));
     }
 
     /**

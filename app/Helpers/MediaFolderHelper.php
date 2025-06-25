@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Session;
 
 class MediaFolderHelper
 {
-    public function saveFoldersFromBreadcrumb(string $breadcrumb, int $userId): MediaFolder
+    public static function saveFoldersFromBreadcrumb(string $breadcrumb, int $userId): MediaFolder
     {
         $parts = explode('/', $breadcrumb);
         $parentId = null;
@@ -31,7 +31,7 @@ class MediaFolderHelper
         return $currentFolder; // trả về folder cuối cùng (Firefly)
     }
 
-    public function getBreadcrumbFromAnyFolder(MediaFolder $folder): string
+    public static function getBreadcrumbFromAnyFolder(MediaFolder $folder): string
     {
         $names = [];
 
@@ -43,7 +43,7 @@ class MediaFolderHelper
         return implode('/', $names);
     }
 
-    public function buildBreadcrumb($folderId)
+    public static function buildBreadcrumb($folderId)
     {
         $breadcrumb = [];
 
@@ -57,45 +57,47 @@ class MediaFolderHelper
         return array_reverse($breadcrumb);
     }
 
-    public function buildFolderTree($folders = [], $depth = 0)
+    public static function buildFolderTree($folders = [], $depth = 0)
     {
         //
     }
 
-    public static function renderFolderOptions(?int $userId, ?int $forderId = null, $prefix = '')
+    public static function renderFolderOptions(?int $userId = null, ?int $selectedFolderId = null, string $mode = 'media_file'): string
     {
-        //  Get Folder
-        $folders = new MediaFolder();
+        $query = MediaFolder::query()->with('children');
 
         if ($userId) {
-            $folders = $folders->where('user_id', $userId);
+            $query->where('user_id', $userId);
         }
 
-        $parentFolder = $folders->where('parent_id', null)->get();
+        $rootFolders = $query->whereNull('parent_id')->get();
 
-        //  Render HTML
-        $html = '';
-        foreach ($parentFolder as $item) {
-            $selected = '';
-            if ($forderId && $item->id == $forderId) {
-                $selected = 'selected';
-            }
+        $html = '<label class="block font-semibold mb-1">📂 Thư mục</label>';
+        $html .= '<select name="folder_id" class="w-full border rounded px-3 py-2">';
+        $html .= '<option value="">-- Không có --</option>';
 
-            $html .= '<option value="' . $item->id . '" ' . $selected . '>' . $prefix . '📁 ' . $item->name . '</option>';
+        foreach ($rootFolders as $folder) {
+            $html .= self::renderFolderOptionItem($folder, $selectedFolderId, $mode);
+        }
 
-            foreach ($item->children as $childItem) {
-                if ($forderId && $childItem->id == $forderId) {
-                    $selected = 'selected';
-                }
+        $html .= '</select>';
 
-                $html .= '<option value="' . $childItem->id . '" ' . $selected . '>' . $prefix . '-—' . $childItem->name . ' -> (' . $childItem->path . ')</option>';
-            }
+        return $html;
+    }
+
+    protected static function renderFolderOptionItem($folder, ?int $selectedId = null, string $mode = 'media_file', string $prefix = ''): string
+    {
+        $selected = $selectedId === $folder->id ? 'selected' : '';
+        $html = '<option value="' . e($folder->id) . '" ' . $selected . '>' . $prefix . '📁 ' . e($folder->name) . '</option>';
+
+        foreach ($folder->children as $child) {
+            $html .= self::renderFolderOptionItem($child, $selectedId, $mode, $prefix . '— ');
         }
 
         return $html;
     }
 
-    public function getCurrentView($request)
+    public static function getCurrentView($request)
     {
         $view = $request->get('view');
 

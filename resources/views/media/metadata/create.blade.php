@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Create Media')
+@section('title', 'Create Metadata')
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -8,45 +8,20 @@
 
 @section('content')
     <div class="max-w-3xl mx-auto py-8 px-4">
-        <h1 class="text-2xl font-bold mb-6">🆕 Thêm Media Mới</h1>
+        <h1 class="text-2xl font-bold mb-6">🆕 Thêm Metadata</h1>
 
-        <form action="{{ route('media-files.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('media-metadata.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('POST')
 
-            {{-- File upload đẹp --}}
+            {{-- Select File --}}
             <div>
-                <label class="block font-semibold mb-1">📁 Chọn file <span class="text-red-500">*</span></label>
-                <div class="relative border border-gray-300 rounded-lg px-4 py-3 bg-white shadow-sm">
-                    <input type="file" name="file" required
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="text-gray-600 pointer-events-none">Chọn tệp từ máy tính...</div>
-                </div>
-            </div>
-
-            {{-- Tên file gốc --}}
-            <div>
-                <label class="block font-semibold mb-1">📝 Tên file (tùy chọn)</label>
-                <input type="text" name="original_name"
-                       class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
-                       placeholder="Tên gợi nhớ cho file">
-            </div>
-
-            {{-- Chọn thư mục --}}
-            <div>
-                {!! $renderFolderOptions !!}
-            </div>
-
-            {{-- Tag dạng Tom Select --}}
-            <div>
-                <label class="block font-semibold mb-1">🏷️ Tags</label>
-                <select name="tags[]" id="tag-select" multiple class="w-full border rounded px-3 py-2">
-                    @foreach ($tags as $tag)
-                        <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                <select name="media_id" id="file-select" class="w-full border px-2 py-1 rounded">
+                    @foreach ($files as $item)
+                        <option value="{{ $item->id }}" onclick="handleOptionSelect({{ $item->id }})">{{ $item->filename }}</option>
                     @endforeach
                 </select>
             </div>
-
 
             {{-- Metadata key-value động bằng JS --}}
             <div>

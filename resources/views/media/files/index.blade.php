@@ -8,6 +8,7 @@
         <x-head-content
             title-content="📁 Danh sách Media"
             :view-mode="$view"
+            url-current="file"
             :route-action="[
                     'mode' => route('media-files.index', ['view' => $view === 'grid' ? 'list' : 'grid']),
                     'create' => route('media-files.create'),
@@ -119,7 +120,7 @@
         @endif
 
         <div class="mt-6">
-            {{ $mediaFiles->links('pagination::tailwind') }}
+            {{ $mediaFiles->appends(['view' => $view])->links('pagination::tailwind') }}
         </div>
     </div>
 

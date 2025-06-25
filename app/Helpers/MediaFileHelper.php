@@ -2,11 +2,46 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Str;
+use App\DataTransferObjects\MediaFileData;
+use App\Models\MediaFile;
+use App\Models\MediaFolder;
+use App\Models\MediaTag;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Normalizer;
 
 class MediaFileHelper
 {
+    public static function normalizeFilename(string $originalName): string
+    {
+        $pathInfo = pathinfo($originalName, PATHINFO_FILENAME);
+        $normalized = Normalizer::normalize($pathInfo, Normalizer::FORM_KD);
+        return Str::slug($normalized);
+    }
+
+    public static function storeUploadedFile(UploadedFile $file, MediaFolder $folder): string
+    {
+        $normalizedFilename = self::normalizeFilename($file->getClientOriginalName());
+        $filename = $normalizedFilename . '.' . $file->getClientOriginalExtension();
+        $folderPath = 'media/' . $folder->name;
+
+        return $file->storeAs($folderPath, $filename, 'public');
+    }
+
+    public static function createMediaFileFromDto(MediaFileData $dto): MediaFile
+    {
+        return MediaFile::create($dto->toArray());
+    }
+
+    public static function attachRandomTags(MediaFile $mediaFile, int $min = 1, int $max = 3): void
+    {
+        $tags = MediaTag::get();
+        if ($tags->count()) {
+            $mediaFile->tags()->attach($tags->random(rand($min, min($max, $tags->count())))->pluck('id'));
+        }
+    }
+
     public static function generateSluggedFilename($url)
     {
         $filename = basename(parse_url($url, PHP_URL_PATH));

@@ -1,9 +1,17 @@
 <div class="relative z-10" id="showFileModal" aria-labelledby="dialog-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true"></div>
 
+    {{-- Content --}}
     <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
             <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-5xl">
+                {{-- Close button --}}
+                <x-button
+                    onclick="closeModal()"
+                    class="absolute top-2 right-3 text-gray-400 hover:text-red-500 text-xl font-bold"
+                    name-btn="x"
+                />
+
                 <div class="bg-white p-6">
                     <h2 class="text-xl font-bold mb-4">📁 Thông tin Media</h2>
 
@@ -73,14 +81,19 @@
                     </div>
                 </div>
 
+                {{-- Button Actions --}}
                 <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <a href="{{ route('media-files.edit', $file) }}" type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 sm:ml-3 sm:w-auto">Edit</a>
-                    <button type="button"
-                            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                            onclick="closeModal()"
-                    >
-                        Đóng
-                    </button>
+                    <x-button
+                        :href="route('media-files.edit', $file)"
+                        type="button"
+                        class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                        name-btn="Sửa"
+                    />
+                    <x-button
+                        type="button"
+                        onclick="closeModal()"
+                        name-btn="Đóng"
+                    />
                 </div>
             </div>
         </div>

@@ -8,11 +8,9 @@ use Illuminate\Http\Request;
 
 class MediaFolderController extends Controller
 {
-    protected $mediaFolderHelper;
-
-    public function __construct(MediaFolderHelper $mediaFolderHelper)
+    public function __construct()
     {
-        $this->mediaFolderHelper = $mediaFolderHelper;
+        //
     }
 
     /**
@@ -24,7 +22,7 @@ class MediaFolderController extends Controller
         $parentId = $request->get('parent');
 
         $folders = MediaFolder::where('parent_id', $parentId)->paginate(12);
-        $breadcrumbs = $this->mediaFolderHelper->buildBreadcrumb($parentId);
+        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($parentId);
 
         return view('media.folders.index', compact('folders', 'view', 'breadcrumbs', 'parentId'));
     }
@@ -34,7 +32,11 @@ class MediaFolderController extends Controller
      */
     public function create()
     {
-        return view('media.folders.create');
+        $userId = auth()->user()->id ?? null;
+
+        $renderFolderOptions = MediaFolderHelper::renderFolderOptions($userId, null, 'media_folder');
+
+        return view('media.folders.create')->with('renderFolderOptions', $renderFolderOptions);
     }
 
     /**
@@ -59,7 +61,7 @@ class MediaFolderController extends Controller
         $view = $request->get('view');
 
         $folderData = MediaFolder::withCount(['children', 'files'])->findOrFail($folder);
-        $breadcrumbs = $this->mediaFolderHelper->buildBreadcrumb($folderData->parent_id);
+        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($folderData->parent_id);
 
         return view('media.folders.show')
             ->with(['folder' => $folderData, 'breadcrumbs' => $breadcrumbs, 'view' => $view]);
@@ -70,7 +72,12 @@ class MediaFolderController extends Controller
      */
     public function edit(MediaFolder $folder)
     {
-        return view('media.folders.edit', compact('folder'));
+        $userId = auth()->user()->id ?? null;
+
+        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($folder->parent_id);
+        $renderFolderOptions = MediaFolderHelper::renderFolderOptions($userId, $folder->parent_id, 'media_folder');
+
+        return view('media.folders.edit', compact('folder', 'breadcrumbs', 'renderFolderOptions'));
     }
 
     /**
