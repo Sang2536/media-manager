@@ -29,13 +29,11 @@
         {{-- Nhóm nút chức năng --}}
         <div class="flex gap-2">
             <x-button
+                id="{{ 'collapseFilter-' . uniqid() }}"
                 class="inline-flex items-center gap-2 border border-yellow-500 bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600 transition shadow"
                 name-btn="🧹 Bộ lọc"
-            />
-
-            <x-button
-                class="inline-flex items-center gap-2 border border-b-blue-500 bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition shadow"
-                name-btn="🔄 Làm mới"
+                data-toggle="collapse"
+                data-target="#collapse-filter"
             />
 
             <x-button
@@ -44,20 +42,23 @@
                 name-btn="➕ Thêm"
             />
 
-            <x-button
-                :href="$routeAction['destroy']"
-                class="inline-flex items-center gap-2 border border-red-600 bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition shadow"
-                name-btn="🗑️ Xóa"
-            />
-
             @if($buttonDropdown)
                 <x-dropdown
                     :button-title="$buttonDropdown['title']"
                     :button-icon="true"
                     type="menu"
                     :items="$buttonDropdown['items']"
+                    data-toggle="dropdown"
+                    data-target=".dropdown-menu"
                 />
             @endif
         </div>
     </div>
+
+    <x-collapse
+        id="collapse-filter"
+        class="hidden items-center justify-end flex-wrap gap-4 mb-8"
+        title="Filter">
+        <x-filter :type-filter="$urlCurrent" />
+    </x-collapse>
 </div>

@@ -14,4 +14,8 @@
             {{ $crumb->name }}
         </a>
     @endforeach
+
+    @if($currentFolder)
+        <span class="mx-2 text-gray-400">/ {{ $currentFolder }}</span>
+    @endif
 </nav>

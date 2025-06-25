@@ -13,14 +13,17 @@ class Breadcrumb extends Component
     public string $viewMode;
     public array $routeAction;
 
+    public ?string $currentFolder;
+
     /**
      * Create a new component instance.
      */
-    public function __construct(iterable $breadcrumbs, string $viewMode, array $routeAction)
+    public function __construct(iterable $breadcrumbs, string $viewMode, array $routeAction, ?string $currentFolder = null)
     {
         $this->breadcrumbs = $breadcrumbs;
         $this->viewMode = $viewMode;
         $this->routeAction = $routeAction;
+        $this->currentFolder = $currentFolder;
     }
 
     /**

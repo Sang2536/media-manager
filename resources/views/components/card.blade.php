@@ -1,4 +1,8 @@
-<div class="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-[1.02] duration-300">
+<div
+    draggable="true"
+    ondragstart="event.dataTransfer.setData('text/plain', '{{ route('media-files.destroy', $file->id) }}')"
+    class="bg-white shadow-lg rounded-2xl overflow-hidden transition hover:scale-[1.02] duration-300"
+>
     <img src="{{ $file->image_url }}"
          alt="{{ $file->original_name }}"
          class="w-full h-48 object-cover" />

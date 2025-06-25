@@ -6,15 +6,20 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class Filter extends Component
+class Collapse extends Component
 {
-    public ?string $typeFilter;
+    public string $id;
+    public ?string $class;
+    public string $title;
+
     /**
      * Create a new component instance.
      */
-    public function __construct(?string $typeFilter = 'folder')
+    public function __construct(string $id, ?string $class = null, string $title)
     {
-        $this->typeFilter = $typeFilter;
+        $this->id = $id;
+        $this->class = $class;
+        $this->title = $title;
     }
 
     /**
@@ -22,6 +27,6 @@ class Filter extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.filter');
+        return view('components.collapse');
     }
 }

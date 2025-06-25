@@ -8,26 +8,29 @@ use Illuminate\View\Component;
 
 class HeadContent extends Component
 {
-    public string $titleContent = 'Button';
-    public ?string $viewMode = '';
+    public string $titleContent;
+    public ?string $viewMode;
     public array $routeAction;
     public array $buttonDropdown;
+    public ?string $urlCurrent;
 
 
     /**
      * Create a new component instance.
      */
     public function __construct(
-        string $titleContent = 'Title Content',
-        ?string $viewMode,
+        string $titleContent = 'Button',
+        ?string $viewMode = '',
         array $routeAction,
-        array $buttonDropdown = []
+        array $buttonDropdown = [],
+        ?string $urlCurrent = 'folder'
     )
     {
         $this->titleContent = $titleContent;
         $this->viewMode = $viewMode;
         $this->routeAction = $routeAction;
         $this->buttonDropdown = $buttonDropdown;
+        $this->urlCurrent = $urlCurrent;
     }
 
     /**
