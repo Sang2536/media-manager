@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('media_tags', function (Blueprint $table) {
+        Schema::create('media_folder_tag', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('slug')->unique(); // Dùng cho URL hoặc search
-            $table->string('color')->nullable(); // Gợi ý màu tag (UI)
+            $table->foreignId('media_folder_id')->constrained()->onDelete('cascade');
+            $table->foreignId('media_tag_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('media_tags');
+        Schema::dropIfExists('media_folder_tag');
     }
 };

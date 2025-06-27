@@ -10,10 +10,29 @@ class MediaFolder extends Model
 
     protected $fillable = [
         'user_id',
+        'parent_id',
         'name',
+        'slug',
         'path',
+        'depth',
         'storage',
-        'parent_id'
+        'kind',
+        'folder_type',
+        'is_locked',
+        'is_shared',
+        'is_favorite',
+        'thumbnail',
+        'comments',
+        'permissions',
+        'last_opened_at',
+    ];
+
+    protected $casts = [
+        'is_locked' => 'boolean',
+        'is_shared' => 'boolean',
+        'is_favorite' => 'boolean',
+        'permissions' => 'array',
+        'last_opened_at' => 'datetime',
     ];
 
     public function user() {
@@ -30,5 +49,9 @@ class MediaFolder extends Model
 
     public function files() {
         return $this->hasMany(MediaFile::class);
+    }
+
+    public function tags() {
+        return $this->belongsToMany(MediaTag::class, 'media_folder_tag', 'media_folder_id', 'media_tag_id');
     }
 }

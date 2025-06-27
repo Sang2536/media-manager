@@ -14,10 +14,26 @@ return new class extends Migration
         Schema::create('media_folders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('path')->nullable();
-            $table->string('storage')->default('local');
             $table->foreignId('parent_id')->nullable()->constrained('media_folders')->onDelete('cascade');
+            $table->string('name');
+            $table->string('slug')->nullable(); // URL nếu muốn public
+            $table->string('path')->nullable();
+            $table->unsignedTinyInteger('depth')->nullable(); // Độ sâu cây thư mục
+
+            $table->string('storage')->default('local');
+            $table->string('kind')->default('folder');
+            $table->string('folder_type')->nullable(); // Phân loại theo mục đích
+
+            $table->boolean('is_locked')->default(false);
+            $table->boolean('is_shared')->default(false);
+            $table->boolean('is_favorite')->default(false);
+
+            $table->string('thumbnail')->nullable(); // Đại diện hình ảnh
+            $table->text('comments')->nullable(); // Ghi chú mô tả cho folder
+
+            $table->json('permissions')->nullable();
+
+            $table->timestamp('last_opened_at')->nullable(); // lần mở cuối cùng
             $table->timestamps();
         });
     }
