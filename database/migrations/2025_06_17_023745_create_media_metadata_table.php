@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('media_metadata', function (Blueprint $table) {
             $table->id();
             $table->foreignId('media_file_id')->constrained()->onDelete('cascade');
-            $table->string('key');
+            $table->string('key');  //  Dimensions, Color space, Color profile, Alpha channel, Last opened
             $table->text('value')->nullable();
             $table->timestamps();
         });

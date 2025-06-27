@@ -12,6 +12,7 @@ class MediaFile extends Model
 
     protected $fillable = [
         'user_id',
+        'media_folder_id',
         'filename',
         'original_name',
         'mime_type',
@@ -19,8 +20,21 @@ class MediaFile extends Model
         'path',
         'thumbnail_path',
         'source_url',
-        'media_folder_id',
-        'is_public'
+        'storage',
+        'is_locked',
+        'is_shared',
+        'is_favorite',
+        'comments',
+        'permissions',
+        'last_opened_at'
+    ];
+
+    protected $casts = [
+        'is_locked' => 'boolean',
+        'is_shared' => 'boolean',
+        'is_favorite' => 'boolean',
+        'permissions' => 'array',
+        'last_opened_at' => 'datetime',
     ];
 
     protected $appends = ['image_url'];
