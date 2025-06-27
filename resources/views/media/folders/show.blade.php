@@ -20,10 +20,12 @@
                                     :route-action="[
                                         'index' => route('media-folders.index')
                                     ]"
+                                    :current="$folder->name"
                                 />
                             @endif
 
                             <div class="space-y-2 text-gray-700">
+                                <div class="my-2">👤 {{ $folder->user->name }}</div>
                                 <div><strong>Tên:</strong> {{ $folder->name }}</div>
                                 <div><strong>ID:</strong> {{ $folder->id }}</div>
                                 <div><strong>Folder con:</strong> {{ $folder->children_count ?? 0 }}</div>

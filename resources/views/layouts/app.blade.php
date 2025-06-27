@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>@yield('title', 'Media Manager')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Thêm font từ Google --}}
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">

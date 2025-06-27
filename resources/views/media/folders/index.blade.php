@@ -8,6 +8,7 @@
         <x-head-content
             title-content="📁 Danh sách Media"
             :view-mode="$view"
+            :filters="$filters"
             :route-action="[
                     'mode' => route('media-folders.index', ['view' => $view === 'grid' ? 'list' : 'grid']),
                     'create' => route('media-folders.create'),
@@ -51,7 +52,7 @@
 
         @if ($view === 'grid')
             {{-- Grid view --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 @forelse ($folders as $folder)
                     <div
                         draggable="true"
@@ -61,22 +62,29 @@
                         <a href="{{ route('media-folders.index', ['parent' => $folder->id, 'view' => 'grid']) }}" class="block">
                             <div class="text-6xl mb-2">📁</div>
                             <div class="font-semibold text-lg truncate">{{ $folder->name }}</div>
+                            <div class="my-2">👤 {{ $folder->user->name }}</div>
                             <div class="text-sm text-gray-500 mt-1">
                                 {{ $folder->children()->count() }} thư mục - {{ $folder->files()->count() }} ảnh
                             </div>
                         </a>
-                        <div class="mt-3 flex justify-center gap-4 text-sm">
-                            <button type="button" onclick="openModal('{{ route('media-folders.show', $folder->id) }}', '{{ $view }}')" class="text-green-600 hover:underline">
+                        <div class="mt-2 flex justify-between gap-2 text-sm">
+                            <button onclick="openModal('{{ route('media-folders.show', $folder->id) }}', '{{ $view }}')"
+                                    class="flex-1 text-center text-gray-700 border border-gray-400 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded min-w-0">
                                 Xem
                             </button>
 
-                            <a href="{{ route('media-folders.edit', $folder) }}" class="text-blue-600 hover:underline">Sửa</a>
+                            <a href="{{ route('media-folders.edit', $folder->id) }}"
+                               class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
+                                Sửa
+                            </a>
 
-                            <form action="{{ route('media-folders.destroy', $folder) }}" method="POST"
-                                  onsubmit="return confirm('Xóa thư mục này?')" class="inline">
-                                @csrf @method('DELETE')
-                                <button class="text-red-600 hover:underline">Xóa</button>
-                            </form>
+                            <x-button
+                                class="flex-1 text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded min-w-0"
+                                style="line-height: 1;"
+                                name-btn="Xóa"
+                                type="button"
+                                onclick="handleDelete('{{ route('media-folders.destroy', $folder->id) }}')"
+                            />
                         </div>
                     </div>
                 @empty
@@ -88,7 +96,7 @@
             <div class="bg-white shadow rounded-xl overflow-hidden">
                 <x-table
                     :view-mode="$view"
-                    :headers="['Folder', 'Folder con - Ảnh', 'Created at', 'Action']"
+                    :headers="['Folder', 'User', 'Folder con - Ảnh', 'Created at', 'Action']"
                 >
                     {{-- Table body --}}
                     @forelse ($folders as $folder)
@@ -98,33 +106,32 @@
                                 <span>📁</span>
                                 <span>{{ $folder->name }}</span>
                             </td>
+                            <td class="px-6 py-4">👤 {{ $folder->user->name }}</td>
                             <td class="px-6 py-4">
-                                Folder con: {{ $folder->children()->count() }} <br />
-                                Ảnh: {{ $folder->files()->count() }}
+                                📁 Folder con: {{ $folder->children()->count() }} <br />
+                                🖼️ Ảnh: {{ $folder->files()->count() }}
                             </td>
                             <td class="px-6 py-4">{{ $folder->created_at }}</td>
                             <td class="px-6 py-4 flex items-center gap-4"
                                 onclick="event.stopPropagation();"> {{-- ngăn chặn redirect khi bấm vào "Sửa" / "Xóa" --}}
                                 <div class="mt-2 flex justify-between gap-2 text-sm">
-                                    <button onclick="openModal('{{ route('media-files.show', $folder->id) }}', '{{ $view }}')"
+                                    <button onclick="openModal('{{ route('media-folders.show', $folder->id) }}', '{{ $view }}')"
                                             class="flex-1 text-center text-gray-700 border border-gray-400 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded min-w-0">
                                         Xem
                                     </button>
 
-                                    <a href="{{ route('media-files.edit', $folder->id) }}"
+                                    <a href="{{ route('media-folders.edit', $folder->id) }}"
                                        class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
                                         Sửa
                                     </a>
 
-                                    <form action="{{ route('media-files.destroy', $folder->id) }}" method="POST"
-                                          onsubmit="return confirm('Bạn có chắc muốn xóa?')" class="flex-1 min-w-0">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded">
-                                            Xóa
-                                        </button>
-                                    </form>
+                                    <x-button
+                                        class="flex-1 text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded min-w-0"
+                                        style="line-height: 1;"
+                                        name-btn="Xóa"
+                                        type="button"
+                                        onclick="handleDelete('{{ route('media-folders.destroy', $folder->id) }}')"
+                                    />
                                 </div>
                             </td>
                         </tr>

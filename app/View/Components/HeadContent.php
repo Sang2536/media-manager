@@ -12,8 +12,8 @@ class HeadContent extends Component
     public ?string $viewMode;
     public array $routeAction;
     public array $buttonDropdown;
+    public ?array $filters;
     public ?string $urlCurrent;
-
 
     /**
      * Create a new component instance.
@@ -23,13 +23,15 @@ class HeadContent extends Component
         ?string $viewMode = '',
         array $routeAction,
         array $buttonDropdown = [],
-        ?string $urlCurrent = 'folder'
+        ?string $urlCurrent = 'folder',
+        ?array $filters = []
     )
     {
         $this->titleContent = $titleContent;
         $this->viewMode = $viewMode;
         $this->routeAction = $routeAction;
         $this->buttonDropdown = $buttonDropdown;
+        $this->filters = $filters;
         $this->urlCurrent = $urlCurrent;
     }
 

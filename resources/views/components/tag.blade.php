@@ -9,9 +9,7 @@
             class="ml-1 text-gray-500 hover:text-red-600 focus:outline-none"
             style="line-height: 1;"
             title="Xoá tag"
-            data-tag-id="{{ $tagId }}"
-            data-url="{{ route('media-tags.destroy', $tagId) }}"
-            onclick="deleteTag(this)"
+            onclick="handleDelete('{{ route('media-tags.destroy', $tagId) }}')"
         >
             &times;
         </button>

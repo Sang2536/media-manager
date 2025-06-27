@@ -29,6 +29,12 @@
         {{-- Nhóm nút chức năng --}}
         <div class="flex gap-2">
             <x-button
+                class="inline-flex items-center gap-2 border border-cyan-500 bg-cyan-500 text-white px-5 py-2 rounded-lg hover:bg-cyan-600 transition shadow"
+                name-btn="🔄 Làm mới"
+                onclick="window.location.href = window.location.origin + window.location.pathname"
+            />
+
+            <x-button
                 id="{{ 'collapseFilter-' . uniqid() }}"
                 class="inline-flex items-center gap-2 border border-yellow-500 bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600 transition shadow"
                 name-btn="🧹 Bộ lọc"
@@ -59,6 +65,6 @@
         id="collapse-filter"
         class="hidden items-center justify-end flex-wrap gap-4 mb-8"
         title="Filter">
-        <x-filter :type-filter="$urlCurrent" />
+        <x-filter :filters="$filters" :type-filter="$urlCurrent" />
     </x-collapse>
 </div>

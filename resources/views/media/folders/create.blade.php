@@ -3,7 +3,7 @@
 @section('title', 'Create Folder')
 
 @section('content')
-    <div class="max-w-xl mx-auto p-6">
+    <div class="max-w-3xl mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">➕ Tạo thư mục mới</h1>
 
         @if ($errors->any())
@@ -20,19 +20,10 @@
             @csrf
             @method('POST')
 
-            {{-- Chọn thư mục cha --}}
-            <div class="py-2 space-y-2">
-                {!! $renderFolderOptions !!}
-            </div>
-
-            {{-- Tên thư mục --}}
-            <div class="py-2 space-y-2">
-                <label class="block font-semibold mb-1">📝 Tên Thư mục</label>
-                <input type="text" name="name"
-                       class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
-                       placeholder="Tên folder"
-                       value="{{ old('name') }}" required>
-            </div>
+            <x-tabbed-folder-editor
+                :render-folder-options="$renderFolderOptions"
+                mode="edit"
+            />
 
             {{-- Button --}}
             <div>
