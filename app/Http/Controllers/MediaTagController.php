@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MediaTag;
 use Illuminate\Http\Request;
 
 class MediaTagController extends Controller
@@ -11,7 +12,9 @@ class MediaTagController extends Controller
      */
     public function index()
     {
-        //
+        $tags = MediaTag::all();
+
+        return view('media.tags.index', compact('tags'));
     }
 
     /**

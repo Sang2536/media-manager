@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
+@section('title', 'Create Folder')
+
 @section('content')
-    <div class="max-w-xl mx-auto p-6">
+    <div class="max-w-3xl mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">➕ Tạo thư mục mới</h1>
 
         @if ($errors->any())
@@ -16,20 +18,31 @@
 
         <form action="{{ route('media-folders.store') }}" method="POST" class="space-y-4">
             @csrf
+            @method('POST')
 
-            <div>
-                <label for="name" class="block font-medium">Tên thư mục:</label>
-                <input type="text" name="name" id="name"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200"
-                       value="{{ old('name') }}" required>
-            </div>
+            <x-tabbed-folder-editor
+                :render-folder-options="$renderFolderOptions"
+                mode="edit"
+            />
 
+            {{-- Button --}}
             <div>
-                <button type="submit"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    Lưu thư mục
-                </button>
-                <a href="{{ route('media-folders.index') }}" class="ml-4 text-gray-600 hover:underline">⬅ Quay lại</a>
+                <x-button
+                    type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                    name-btn="💾 Lưu thư mục"
+                />
+
+                <x-button
+                    class="inline-flex items-center gap-2 border border-b-blue-500 bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition shadow"
+                    name-btn="🔄 Làm mới"
+                />
+
+                <x-button
+                    :href="route('media-folders.index')"
+                    class="inline-flex items-center gap-2 border border-b-gray-600 bg-gray-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition shadow"
+                    name-btn="🔙 Quay lại"
+                />
             </div>
         </form>
     </div>

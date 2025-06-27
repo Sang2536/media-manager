@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MediaFile;
+use App\Models\MediaMetadata;
 use Illuminate\Http\Request;
 
 class MediaMetadataController extends Controller
@@ -11,7 +13,12 @@ class MediaMetadataController extends Controller
      */
     public function index()
     {
-        //
+        $metadata = MediaMetadata::with('file')
+            ->orderByDesc('created_at')
+            ->latest()
+            ->paginate(12);
+
+        return view('media.metadata.index', compact('metadata'));
     }
 
     /**
@@ -19,7 +26,9 @@ class MediaMetadataController extends Controller
      */
     public function create()
     {
-        //
+        $files = MediaFile::all()->pluck('filename', 'id');
+
+        return view('media.metadata.create', compact('files'));
     }
 
     /**

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->string('path')->nullable();
+            $table->string('storage')->default('local');
             $table->foreignId('parent_id')->nullable()->constrained('media_folders')->onDelete('cascade');
             $table->timestamps();
         });

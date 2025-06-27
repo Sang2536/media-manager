@@ -1,8 +1,24 @@
 @extends('layouts.app')
 
+@section('title', 'Update Folder')
+
+@section('content-header', 'Update Folder')
+
 @section('content')
-    <div class="max-w-xl mx-auto p-6">
+    <div class="max-w-3xl mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">✏️ Sửa thư mục</h1>
+
+        {{-- Breadcrumb --}}
+        @if ($breadcrumbs)
+            <x-breadcrumb
+                :breadcrumbs="$breadcrumbs"
+                view-mode="grid"
+                :route-action="[
+                    'index' => route('media-folders.index')
+                ]"
+                :current="$folder->name"
+            />
+        @endif
 
         @if ($errors->any())
             <div class="mb-4 bg-red-100 text-red-700 p-3 rounded">
@@ -14,23 +30,21 @@
             </div>
         @endif
 
-        <form action="{{ route('media-folders.update', $folder) }}" method="POST" class="space-y-4">
+        <form action="{{ route('media-folders.update', $folder->id) }}" method="POST" class="space-y-4">
             @csrf
             @method('PUT')
 
-            <div>
-                <label for="name" class="block font-medium">Tên thư mục:</label>
-                <input type="text" name="name" id="name"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200"
-                       value="{{ old('name', $folder->name) }}" required>
-            </div>
+            <x-tabbed-folder-editor
+                :breadcrumb-path="$breadcrumbPath"
+                :render-folder-options="$renderFolderOptions"
+                :folder-name="$folder->name"
+                mode="edit"
+            />
 
-            <div>
-                <button type="submit"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    Cập nhật
-                </button>
-                <a href="{{ route('media-folders.index') }}" class="ml-4 text-gray-600 hover:underline">⬅ Quay lại</a>
+            <div class="flex items-center gap-3">
+                <x-button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" name-btn="💾 Cập nhật" />
+
+                <x-button :href="route('media-folders.index')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition" name-btn="🔙 Quay lại" />
             </div>
         </form>
     </div>

@@ -14,6 +14,6 @@ class MediaMetadata extends Model
     ];
 
     public function file() {
-        return $this->belongsTo(MediaFile::class);
+        return $this->belongsTo(MediaFile::class, 'media_file_id');
     }
 }
