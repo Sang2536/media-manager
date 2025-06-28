@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MediaFolder extends Model
 {
@@ -53,5 +54,14 @@ class MediaFolder extends Model
 
     public function tags() {
         return $this->belongsToMany(MediaTag::class, 'media_folder_tag', 'media_folder_id', 'media_tag_id');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($folder) {
+            if ($folder->parent_id === null) {
+                throw new HttpException(400, 'Không thể xoá thư mục gốc.');
+            }
+        });
     }
 }

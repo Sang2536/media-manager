@@ -23,26 +23,50 @@ class MediaManagerSeeder extends Seeder
             // Tạo thư mục gốc của người dùng
             $rootFolder = MediaFolder::create([
                 'user_id' => $user->id,
-                'name' => 'Root Folder - ' . $user->name,
                 'parent_id' => null,
+                'name' => 'Root Folder - ' . $user->name,
+                'path' => Str::slug('Root Folder - ' . $user->name),
+                'depth' => 0,
             ]);
 
+            $permissions = [
+                'view', 'edit', 'delete', 'upload'
+            ];
+
+            $depth = 0;
             // Tạo thư mục con
-            $folders = collect(['Cosplay', 'Wallpapers', 'Screenshots'])->map(function ($folderName) use ($user, $rootFolder) {
+            $folders = collect(['Cosplay', 'Wallpapers', 'Screenshots'])->map(function ($folderName) use ($user, $rootFolder, $depth, $permissions) {
+                $depth++;
                 return MediaFolder::create([
                     'user_id' => $user->id,
-                    'name' => $folderName,
                     'parent_id' => $rootFolder->id,
+                    'name' => $folderName,
+                    'slug' => Str::slug($folderName),
+                    'path' => $rootFolder->path . '/' . Str::slug($folderName),
+                    'depth' => $depth,
+                    'storage' => 'local',
+                    'kind' => 'folder',
+                    'folder_type' => array_rand([null, 'upload', 'save']),
+                    'is_locked' => rand(0, 1),
+                    'is_shared' => rand(0, 1),
+                    'is_favorite' => rand(0, 1),
+                    'comments' => $folderName . ' comments',
+                    'permissions' => array_rand($permissions, rand(1, 4)),
                 ]);
             });
 
             // Các tags có thể dùng chung
             $tags = collect(['Anime', 'Game', 'Art', 'HD', 'Portrait', 'Nature'])->map(function ($name) {
-                return MediaTag::firstOrCreate(['name' => $name]);
+                return MediaTag::firstOrCreate([
+                    'name' => $name,
+                    'slug' => Str::slug($name),
+                ]);
             });
 
             // Với mỗi folder → tạo 3 file
-            $folders->each(function ($folder) use ($user, $tags) {
+            $folders->each(function ($folder) use ($user, $permissions, $tags) {
+                $folder->tags()->attach($tags->random(rand(1, 3))->pluck('id'));
+
                 for ($i = 1; $i <= 3; $i++) {
                     $faker = Faker::create();
 
@@ -82,14 +106,21 @@ class MediaManagerSeeder extends Seeder
 
                     $file = MediaFile::create([
                         'user_id' => $user->id,
+                        'media_folder_id' => $folder->id,
                         'filename' => ltrim($file_path[0], '/'),
                         'original_name' => $folder_path . "_original_" . $file_path[0],
                         'mime_type' => 'image/jpeg',
                         'size' => rand(100_000, 1_000_000),
                         'path' => $folder_path . $file_path[0],
                         'thumbnail_path' => "$folder_path/thumb_file_" . $file_path[0],
-                        'media_folder_id' => $folder->id,
-                        'is_public' => rand(0, 1),
+                        'source_url' => 'https://example.com' . $file_path[0],
+                        'storage' => 'local',
+                        'is_locked' => rand(0, 1),
+                        'is_shared' => rand(0, 1),
+                        'is_favorite' => rand(0, 1),
+                        'comments' => $faker->text(rand(100, 500)),
+                        'permissions' => $faker->randomElements($permissions, rand(1, 4)),
+                        'last_opened_at' => $faker->dateTimeBetween('-1 month', 'now'),
                     ]);
 
                     // Gán 1-3 tags ngẫu nhiên

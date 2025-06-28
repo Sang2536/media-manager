@@ -73,18 +73,20 @@
                                 Xem
                             </button>
 
-                            <a href="{{ route('media-folders.edit', $folder->id) }}"
-                               class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
-                                Sửa
-                            </a>
+                            @if ($folder->parent_id)
+                                <a href="{{ route('media-folders.edit', $folder->id) }}"
+                                   class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
+                                    Sửa
+                                </a>
 
-                            <x-button
-                                class="flex-1 text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded min-w-0"
-                                style="line-height: 1;"
-                                name-btn="Xóa"
-                                type="button"
-                                onclick="handleDelete('{{ route('media-folders.destroy', $folder->id) }}')"
-                            />
+                                <x-button
+                                    class="flex-1 text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded min-w-0"
+                                    style="line-height: 1;"
+                                    name-btn="Xóa"
+                                    type="button"
+                                    onclick="handleDelete('{{ route('media-folders.destroy', $folder->id) }}')"
+                                />
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -120,18 +122,20 @@
                                         Xem
                                     </button>
 
-                                    <a href="{{ route('media-folders.edit', $folder->id) }}"
-                                       class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
-                                        Sửa
-                                    </a>
+                                    @if ($folder->parent_id)
+                                        <a href="{{ route('media-folders.edit', $folder->id) }}"
+                                           class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
+                                            Sửa
+                                        </a>
 
-                                    <x-button
-                                        class="flex-1 text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded min-w-0"
-                                        style="line-height: 1;"
-                                        name-btn="Xóa"
-                                        type="button"
-                                        onclick="handleDelete('{{ route('media-folders.destroy', $folder->id) }}')"
-                                    />
+                                        <x-button
+                                            class="flex-1 text-center text-red-700 border border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 rounded min-w-0"
+                                            style="line-height: 1;"
+                                            name-btn="Xóa"
+                                            type="button"
+                                            onclick="handleDelete('{{ route('media-folders.destroy', $folder->id) }}')"
+                                        />
+                                    @endif
                                 </div>
                             </td>
                         </tr>
