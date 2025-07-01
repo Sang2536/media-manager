@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Helpers\MediaFolderHelper;
-use App\Models\MediaFolder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -13,136 +12,163 @@ class MediaFolderHelperTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function create_an_existing_simulation_folder(): array
+    // @test G1: Tạo cây thư mục lồng nhau từ breadcrumb
+    #[Test]
+    public function test_creates_nested_folders_from_breadcrumb()
     {
-        // Tạo user và folder gốc
+        $this->withoutExceptionHandling();
+
         $user = User::factory()->create();
-        $this->actingAs($user);
 
-        $root = MediaFolder::create([
-            'user_id' => $user->id,
-            'name' => 'Root - ' . $user->name,
-            'path' => str()->slug('Root - ' . $user->name),
-        ]);
+        $folder = MediaFolderHelper::saveFromBreadcrumb('A/B/C', $user->id);
 
-        // Giả lập cấu trúc sẵn có: Admin/Cosplay/HSR
-        $admin = MediaFolder::create([
-            'user_id' => $user->id,
-            'name' => 'Admin',
-            'parent_id' => $root->id,
-            'path' => $root->path . '/' . str()->slug('Admin'),
-        ]);
-
-        $cosplay = MediaFolder::create([
-            'user_id' => $user->id,
-            'name' => 'Cosplay',
-            'parent_id' => $admin->id,
-            'path' => $admin->path . '/' . str()->slug('Cosplay'),
-        ]);
-
-        $hsr = MediaFolder::create([
-            'user_id' => $user->id,
-            'name' => 'HSR',
-            'parent_id' => $cosplay->id,
-            'path' => $admin->path . '/' . str()->slug('HSR'),
-        ]);
-
-        return [
-            $user,
-            $root,
-            $admin,
-            $cosplay,
-            $hsr,
-        ];
+        $this->assertEquals('C', $folder->name);
+        $this->assertEquals(3, count(MediaFolderHelper::buildBreadcrumb($folder)) - 1);
     }
 
+    // @test G2: Không cho tạo trùng cây thư mục
     #[Test]
-    public function test_save_from_breadcrumb_creates_missing_only(): void
+    public function test_throws_exception_when_creating_duplicate_breadcrumb()
     {
-        //  Tạo một thư mục mô phỏng hiện có
-        [$user, $root, $admin, $cosplay, $hsr] = $this->create_an_existing_simulation_folder();
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Cây thư mục 'A/B' đã tồn tại.");
 
-        // Gọi hàm với breadcrumb có thêm thư mục mới: Firefly
-        $folder = MediaFolderHelper::saveFromBreadcrumb('Admin/Cosplay/HSR/Firefly', $user->id, $root->id);
-
-        //  kiểm tra thư mục Firefly là thư mục duy nhất mới được tạo
-        $created = MediaFolder::where('user_id', $user->id)
-            ->where('name', 'Firefly')
-            ->where('parent_id', $hsr->id)
-            ->first();
-
-        $this->assertNotNull($created);
-
-        // Kiểm tra folder được tạo
-        $this->assertDatabaseHas('media_folders', [
-            'name' => 'Firefly',
-            'user_id' => $user->id,
-            'parent_id' => $hsr->id,
-        ]);
-
-        // Kiểm tra hàm trả về đúng folder
-        $this->assertEquals('Firefly', $folder->name);
-
-        // Kiểm tra không tạo lại các thư mục cũ
-        $this->assertEquals(5, MediaFolder::where('user_id', $user->id)->count());
+        $user = User::factory()->create();
+        MediaFolderHelper::saveFromBreadcrumb('A/B', $user->id);
+        MediaFolderHelper::saveFromBreadcrumb('A/B', $user->id);
     }
 
+    // @test G3: Rename folder cuối cùng trong breadcrumb
     #[Test]
-    public function test_updates_path_for_all_children_when_folder_is_moved(): void
+    public function test_can_rename_last_folder_in_breadcrumb()
     {
-        //  Tạo một thư mục mô phỏng hiện có
-        [$user, $root, $admin, $cosplay, $hsr] = $this->create_an_existing_simulation_folder();
+        $this->withoutExceptionHandling();
 
-        // Tạo một folder khác để move Cosplay vào
-        $newRoot = MediaFolder::create([
-            'user_id' => $user->id,
-            'name' => 'NewRoot' . $user->name,
-            'path' => str()->slug('NewRoot - ' . $user->name),
-        ]);
+        $user = User::factory()->create();
+        $old = MediaFolderHelper::saveFromBreadcrumb('A/B/C', $user->id);
 
-        // Di chuyển Cosplay → NewRoot
-        $cosplay->parent_id = $newRoot->id;
-        $cosplay->save();
+        $renamed = MediaFolderHelper::saveFromBreadcrumb('A/B/D', $user->id, null, $old, 'rename');
 
-        // Gọi hàm cập nhật path đệ quy
-        MediaFolderHelper::rebuildPathRecursive($cosplay);
-
-        // Làm mới lại các model từ DB
-        $cosplay->refresh();
-        $hsr->refresh();
-
-        $this->assertEquals($newRoot->path . '/cosplay', $cosplay->path);
-        $this->assertEquals($newRoot->path . '/cosplay/hsr', $hsr->fresh()->path);
+        $this->assertEquals('D', $renamed->name);
+        $this->assertEquals($old->id, $renamed->id);
+        $this->assertEquals(
+            ['Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name), 'A', 'B', 'D'],
+            array_map(fn($f) => $f->name, MediaFolderHelper::buildBreadcrumb($renamed))
+        );
     }
 
+    // @test G4: Move folder vào parent khác
     #[Test]
-    public function test_move_folder_and_update_paths_correctly(): void
+    public function test_can_move_folder_to_another_parent()
     {
-        //  Tạo một thư mục mô phỏng hiện có
-        [$user, $root, $admin, $cosplay, $hsr] = $this->create_an_existing_simulation_folder();
+        $this->withoutExceptionHandling();
 
-        //  root/admin/cosplay/hsr  ->   root/admin/game/cosplay-hoyoverse/hsr
+        $user = User::factory()->create();
+        $folder = MediaFolderHelper::saveFromBreadcrumb('A/B/C', $user->id);
+        $newParent = MediaFolderHelper::saveFromBreadcrumb('X/Y', $user->id);
 
-        // Tạo folder Game (mục tiêu mới)  ->  root/admin/game
-        $game = MediaFolder::create([
-            'user_id' => $user->id,
-            'name' => 'Game',
-            'path' => $admin->path . '/' . str()->slug('Game'),
-            'parent_id' => $admin->id,
-        ]);
+        $moved = MediaFolderHelper::saveFromBreadcrumb('X/Y/C', $user->id, null, $folder, 'move');
 
-        // Thực hiện move folder Cosplay → folder Game và đổi tên thành Cosplay HoYoverse
-        $newName = 'Cosplay HoYoverse';
-        $moved = MediaFolderHelper::moveFolderAndUpdatePaths($cosplay->id, $game->id, $newName);
+        $this->assertEquals($folder->id, $moved->id);
+        $this->assertEquals('C', $moved->name);
+        $this->assertEquals(
+            ['Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name), 'X', 'Y', 'C'],
+            array_map(fn($f) => $f->name, MediaFolderHelper::buildBreadcrumb($moved))
+        );
+    }
 
-        // Kiểm tra lại thông tin của folder Cosplay HoYoverse vừa move
-        $this->assertEquals($newName, $moved->name);
-        $this->assertEquals($game->path . '/' . str()->slug($newName), $moved->path);
-        $this->assertEquals($game->id, $moved->parent_id);
+    // @test G5: Rename và move cùng lúc
+    #[Test]
+    public function test_can_rename_and_move_folder()
+    {
+        $this->withoutExceptionHandling();
 
-        // Kiểm tra lại path, parent_id của HSR đã được cập nhật
-        $hsr->refresh();
-        $this->assertEquals($moved->path . '/' . str()->slug($hsr->name), $hsr->path);
-        $this->assertEquals($moved->id, $hsr->parent_id);
+        $user = User::factory()->create();
+        $folder = MediaFolderHelper::saveFromBreadcrumb('A/B/C', $user->id);
+        $newParent = MediaFolderHelper::saveFromBreadcrumb('X/Y', $user->id);
+
+        $updated = MediaFolderHelper::saveFromBreadcrumb('X/Y/D', $user->id, null, $folder, 'rename_move');
+
+        $this->assertEquals('D', $updated->name);
+        $this->assertEquals($folder->id, $updated->id);
+        $this->assertEquals(
+            ['Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name), 'X', 'Y', 'D'],
+            array_map(fn($f) => $f->name, MediaFolderHelper::buildBreadcrumb($updated))
+        );
+    }
+
+    // @test G6: Không cho move folder vào chính nó hoặc con của nó
+    #[Test]
+    public function test_prevents_moving_folder_into_its_descendant()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Không thể di chuyển thư mục vào chính nó hoặc thư mục con của nó.');
+
+        $user = User::factory()->create();
+        $folder = MediaFolderHelper::saveFromBreadcrumb('A/B/C', $user->id);
+        $sub = MediaFolderHelper::saveFromBreadcrumb('A/B/C/Sub', $user->id);
+
+        MediaFolderHelper::saveFromBreadcrumb('A/B/C/Sub/C', $user->id, null, $folder, 'move');
+    }
+
+    // @test G7: Không cho rename trùng tên trong cùng parent
+    #[Test]
+    public function test_prevents_rename_to_existing_sibling_name()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Thư mục 'B' đã tồn tại trong cùng cấp.");
+
+        $user = User::factory()->create();
+        MediaFolderHelper::saveFromBreadcrumb('A/B', $user->id);
+        $folder = MediaFolderHelper::saveFromBreadcrumb('A/C', $user->id);
+
+        MediaFolderHelper::saveFromBreadcrumb('A/B', $user->id, null, $folder, 'rename');
+    }
+
+    // @test G8: Tạo thư mục dưới thư mục cha cụ thể
+    #[Test]
+    public function test_can_create_under_specific_parent()
+    {
+        $this->withoutExceptionHandling();
+
+        $user = User::factory()->create();
+        $base = MediaFolderHelper::saveFromBreadcrumb('Base', $user->id);
+
+        $sub = MediaFolderHelper::saveFromBreadcrumb('Sub1/Sub2', $user->id, $base->id);
+
+        $this->assertEquals('Sub2', $sub->name);
+        $this->assertEquals(
+            ['Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name), 'Base', 'Sub1', 'Sub2'],
+            array_map(fn($f) => $f->name, MediaFolderHelper::buildBreadcrumb($sub))
+        );
+    }
+
+    // @test G9: Tự động tạo root folder khi tạo user
+    #[Test]
+    public function it_creates_root_folder_when_user_created()
+    {
+        $this->withoutExceptionHandling();
+
+        $user = User::factory()->create(['name' => 'Test User']);
+
+        $root = MediaFolderHelper::getRootFolder($user->id);
+
+        $this->assertNotNull($root);
+        $this->assertEquals("Root - Test User", $root->name);
+        $this->assertTrue($root->is_locked);
+        $this->assertEquals(0, $root->depth);
+    }
+
+    // @test G10: Kiểm tra breadcrumb dạng chuỗi
+    #[Test]
+    public function test_can_build_breadcrumb_string()
+    {
+        $this->withoutExceptionHandling();
+
+        $user = User::factory()->create();
+        $folder = MediaFolderHelper::saveFromBreadcrumb('A/B/C', $user->id);
+
+        $breadcrumb = MediaFolderHelper::buildBreadcrumb($folder, true);
+        $this->assertEquals('Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name) . '/A/B/C', $breadcrumb);
     }
 }

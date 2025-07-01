@@ -21,13 +21,44 @@
     <div class="tab-wrapper relative">
         {{-- Breadcrumb Tab --}}
         <div class="tab-content transition-tab" id="tab-breadcrumb">
-            <label class="block font-semibold">📝 Đường dẫn Breadcrumb</label>
-            <input type="text"
-                   name="breadcrumb_path"
-                   class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
-                   placeholder="Ví dụ: Admin/Cosplay/HSR/Firefly"
-                   value="{{ old('breadcrumb_path', $breadcrumbPath) }}">
-            <p class="text-sm text-gray-500">Nhập đầy đủ đường dẫn nếu muốn đổi tên hoặc di chuyển.</p>
+            <div class="py-2 space-y-2">
+                <p class="text-sm text-gray-500">Chú ý: Thao tác update sẽ luôn bắt đầu từ folder đang chọn</p>
+            </div>
+
+            @if ($folderName)
+                <!-- 🎯 Button Box: Chọn thao tác -->
+                <div class="py-2 space-y-2">
+                    <label class="block font-semibold text-sm text-gray-700">🎯 Chọn thao tác</label>
+
+                    <div class="grid grid-cols-4 gap-4">
+                        @php($selected = old('action', 'add'))
+                        @foreach(['add' => 'Add', 'rename' => 'Rename', 'move' => 'Move', 'rename_move' => 'Rename + Move'] as $value => $label)
+                            <label for="action_{{ $value }}" class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="action" id="action_{{ $value }}" value="{{ $value }}" class="text-blue-600" @checked($selected === $value)>
+                                <span class="ml-1">{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <!-- 🔎 Ghi chú động -->
+                    <div id="action-note" class="text-sm text-gray-600 mt-2">
+                        Nhập đường dẫn để cấp thư mục mới từ thư mục hiện tại (có thể tạo nhiều cấp). <br />
+                        Thư mục được tạo sẽ là thư mục con của thư mục hiện tại.
+                    </div>
+                </div>
+            @endif
+
+            <!-- 🧭 Nhập đường dẫn -->
+            <div class="py-2 space-y-2">
+                <label for="breadcrumb_path" class="block font-semibold text-sm text-gray-700">📝 Đường dẫn Breadcrumb</label>
+                <input type="text"
+                       name="breadcrumb_path"
+                       id="breadcrumb_path"
+                       class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
+                       placeholder="Ví dụ: Admin/Cosplay/HSR/Firefly"
+                       value="{{ old('breadcrumb_path', $folderName) }}">
+                <p class="text-sm text-gray-500">Nhập đường dẫn để tạo, đổi tên hoặc di chuyển thư mục.</p>
+            </div>
         </div>
 
         {{-- Select Tab --}}

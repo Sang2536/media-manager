@@ -3,17 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\MediaFolderHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Requests\MediaFolderRequest;
 use App\Models\MediaFolder;
 use Illuminate\Http\Request;
 
 class MediaFolderController extends Controller
 {
-    public function __construct()
-    {
-        //
-    }
-
     /**
      * Display a listing of the resource.
      */
@@ -23,10 +19,9 @@ class MediaFolderController extends Controller
 
         $parentId = $request->get('parent');
 
-//        dd($request->all());
         $folders = MediaFolderHelper::getFoldersByParent($parentId, $request->all());
 
-        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($parentId);
+        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($parentId, false, '▸');
 
         $filters = $request->all();
 
@@ -50,55 +45,48 @@ class MediaFolderController extends Controller
      */
     public function store(MediaFolderRequest $request)
     {
-        $userId = auth()->id();
-
-        $rootFolder = MediaFolderHelper::getRootFolder($userId);
-        if (! $rootFolder) {
-            return redirect()->back()->withErrors(['root' => 'Không tìm thấy thư mục gốc của bạn.']);
-        }
-
-        $parentId = $request->input('parent_id') ?? $rootFolder->id;
-        if (! MediaFolderHelper::isDescendantOf($parentId, $rootFolder->id)) {
-            $parentId = $rootFolder->id;
-        }
-
-        $name = $request->input('breadcrumb_path') ?? $request->input('folder_name');
+        $userId = auth()->id() ?? 1;
+        $name = $request->folderName();
+        $parentId = $request->validatedParentId($userId);
+        $actionBreadcrumb = $request->get('action');
 
         if (! $name) {
-            return redirect()->back()->withErrors(['name' => 'Vui lòng nhập tên thư mục.']);
+            return ResponseHelper::result(false, 'Vui lòng nhập tên thư mục.');
         }
 
-        $isBreadcrumb = str_contains($name, '/');
-
         try {
-            if ($isBreadcrumb) {
-                MediaFolderHelper::saveFromBreadcrumb($name, $userId, $parentId);
+            if ($request->get('active_tab') ==='breadcrumb') {
+                MediaFolderHelper::saveFromBreadcrumb($name, $userId, $parentId, $actionBreadcrumb);
             } else {
-                MediaFolderHelper::saveSingle($name, $userId, $parentId);
+                $dto = $request->toDto($userId);
+                MediaFolderHelper::saveSingle($dto);
             }
 
-            return redirect()->route('media-folders.index')->with('success', 'Tạo thư mục thành công!');
-        } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->withErrors(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()])
-                ->with('active_tab', $request->input('active_tab'));
+            return ResponseHelper::result(true, 'Tạo thư mục thành công!', 201, route('media-folders.index'));
+        } catch (\Throwable $e) {
+            return ResponseHelper::result(false, 'Có lỗi xảy ra: ' . $e->getMessage(), 400);
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, $folder)
+    public function show(Request $request, MediaFolder $folder)
     {
         $view = $request->get('view');
 
-        $folderData = MediaFolder::withCount(['children', 'files'])->findOrFail($folder, true);
-        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($folderData->parent_id);
+        $folderData = $folder->loadCount(['children', 'files']);
 
-        return view('media.folders.show')
-            ->with(['folder' => $folderData, 'breadcrumbs' => $breadcrumbs, 'view' => $view]);
+        $breadcrumbs = MediaFolderHelper::buildBreadcrumb($folderData->parent_id, false, '▸');
+
+        $count = MediaFolderHelper::countAllDescendants($folder);
+
+        return view('media.folders.show')->with([
+            'folder' => $folderData,
+            'breadcrumbs' => $breadcrumbs,
+            'view' => $view,
+            'count' => $count,
+        ]);
     }
 
     /**
@@ -109,7 +97,7 @@ class MediaFolderController extends Controller
         $userId = auth()->id();
 
         $breadcrumbs = MediaFolderHelper::buildBreadcrumb($folder->parent_id);
-        $breadcrumbPath = MediaFolderHelper::buildBreadcrumb($folder->id, true);
+        $breadcrumbPath = MediaFolderHelper::buildBreadcrumb($folder->id, true, "▸");
 
         $renderFolderOptions = MediaFolderHelper::renderFolderOptions($userId, $folder->parent_id, 'media_folder');
 
@@ -121,44 +109,28 @@ class MediaFolderController extends Controller
      */
     public function update(MediaFolderRequest $request, MediaFolder $folder)
     {
-        $userId = auth()->id();
+        $userId = auth()->id() ?? 1;
 
-        // Luôn đảm bảo user có root folder
-        $rootFolder = MediaFolderHelper::getRootFolder($userId);
-        if (! $rootFolder) {
-            return redirect()->back()->withErrors(['root' => 'Không tìm thấy thư mục gốc của bạn.']);
+        // Kiểm tra quyền sở hữu
+        if (! MediaFolderHelper::isOwnedByUser($folder, $userId)) {
+            return ResponseHelper::result(false, 'Bạn không có quyền cập nhật thư mục này.', 403);
         }
 
-        // Ưu tiên parent_id từ request, nếu không có thì dùng root
-        $parentId = $request->input('parent_id') ?? $rootFolder->id;
-
-        // Không cho phép đặt folder ra ngoài nhánh root
-        if (! MediaFolderHelper::isDescendantOf($parentId, $rootFolder->id)) {
-            $parentId = $rootFolder->id;
-        }
-
-        // Ưu tiên lấy tên từ breadcrumb hoặc folder_name
-        $name = $request->input('breadcrumb_path') ?? $request->input('folder_name');
-
-        if (! $name) {
-            return redirect()->back()->withErrors(['name' => 'Tên thư mục không được bỏ trống.']);
-        }
-
-        // Nếu là breadcrumb
-        $isBreadcrumb = str_contains($name, '/');
+        $name = $request->folderName();
+        $parentId = $request->validatedParentId($userId);
+        $actionBreadcrumb = $request->get('action');
 
         try {
-            if ($isBreadcrumb) {
-                // ✅ Xử lý cập nhật thông qua cây breadcrumb
-                MediaFolderHelper::saveFromBreadcrumb($name, $userId, $parentId, $folder);
+            if ($request->get('active_tab') ==='breadcrumb') {
+                MediaFolderHelper::saveFromBreadcrumb($name, $userId, $parentId, $folder, $actionBreadcrumb);
             } else {
-                // ✅ Cập nhật tên & parent trực tiếp
-                MediaFolderHelper::updateFolderInfo($folder, $name, $parentId);
+                $dto = $request->toUpdateDto($folder, $userId);
+                MediaFolderHelper::saveSingle($dto, $folder);
             }
 
-            return redirect()->route('media-folders.index')->with('success', 'Cập nhật thư mục thành công!');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            return ResponseHelper::result(true, 'Cập nhật thư mục thành công.', 200, route('media-folders.index'));
+        } catch (\Throwable $e) {
+            return ResponseHelper::result(false, 'Lỗi cập nhật: ' . $e->getMessage(), 400);
         }
     }
 
@@ -167,32 +139,8 @@ class MediaFolderController extends Controller
      */
     public function destroy(MediaFolder $folder)
     {
-        $userId = auth()->id();
+        $userId = auth()->id() ?? 1;
 
-        // Kiểm tra quyền sở hữu
-        if (! MediaFolderHelper::isOwnedByUser($folder, $userId)) {
-            if (request()->expectsJson()) {
-                return response()->json(['message' => 'Bạn không có quyền xoá thư mục này.'], 403);
-            }
-
-            return redirect()->back()->withErrors(['unauthorized' => 'Bạn không có quyền xoá thư mục này.']);
-        }
-
-        // Không cho xoá nếu đang chứa file
-        if ($folder->files()->count() > 0) {
-            if (request()->expectsJson()) {
-                return response()->json(['message' => 'Không thể xoá thư mục đang chứa file.'], 400);
-            }
-
-            return back()->withErrors('Không thể xoá thư mục đang chứa file');
-        }
-
-        $folder->delete();
-
-        if (request()->expectsJson()) {
-            return response()->json(['message' => 'Đã xoá thư mục']);
-        }
-
-        return redirect()->route('media-folders.index')->with('success', 'Đã xoá thư mục');
+        return MediaFolderHelper::deleteFolder($folder, $userId);
     }
 }

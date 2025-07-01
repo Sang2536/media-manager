@@ -10,20 +10,29 @@ use Illuminate\View\Component;
 class Breadcrumb extends Component
 {
     public iterable|string $breadcrumbs;
-    public string $viewMode;
+    public ?string $viewMode;
     public array $routeAction;
 
     public ?string $current;
 
+    public iterable|string $separate;
+
     /**
      * Create a new component instance.
      */
-    public function __construct(iterable|string $breadcrumbs, string $viewMode, array $routeAction, ?string $current = '')
+    public function __construct(
+        iterable|string $breadcrumbs,
+        ?string $viewMode = 'grid',
+        array $routeAction,
+        ?string $current = '',
+        iterable|string $separate = '/'
+    )
     {
         $this->breadcrumbs = $breadcrumbs;
         $this->viewMode = $viewMode;
         $this->routeAction = $routeAction;
         $this->current = $current;
+        $this->separate = $separate;
     }
 
     /**

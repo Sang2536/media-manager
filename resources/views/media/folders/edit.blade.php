@@ -13,6 +13,7 @@
             <x-breadcrumb
                 :breadcrumbs="$breadcrumbs"
                 view-mode="grid"
+                separate="▸"
                 :route-action="[
                     'index' => route('media-folders.index')
                 ]"

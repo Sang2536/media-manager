@@ -94,4 +94,23 @@ document.addEventListener('DOMContentLoaded', function () {
     activateTab(activeTab);
 });
 
-//  Tab File
+//  Breadcrumb Folder Note
+document.addEventListener('DOMContentLoaded', function () {
+    const noteEl = document.getElementById('action-note');
+    const radios = document.querySelectorAll('input[name="action"]');
+
+    const notes = {
+        add: "Nhập đường dẫn để tạo thư mục mới từ thư mục hiện tại (có thể tạo nhiều cấp). Thư mục được tạo sẽ là thư mục con của thư mục hiện tại.",
+        rename: "Nhập đường dẫn mới để đổi tên thư mục hiện tại (không thể thay đổi cấp). Nếu nhập đường dẫn sẽ đổi tên và thêm thư mục con ",
+        move: "Nhập đường dẫn mới để di chuyển thư mục hiện tại (trong số các thư mục đã có). Sau khi di chuyển thư mục hiện tại sẽ là thư mục con.",
+        rename_move: "Nhập đường dẫn mới để di chuyển và đổi tên thư mục hiện tại."
+    };
+
+    radios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            const selected = this.value;
+            noteEl.textContent = notes[selected] || "";
+        });
+    });
+});
+
