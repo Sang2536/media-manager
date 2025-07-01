@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\MediaFolderController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\MediaLogController;
 use App\Http\Controllers\MediaMetadataController;
 use App\Http\Controllers\MediaTagController;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +17,8 @@ Route::get('/', function () {
 Route::prefix('media')->group(function () {
     Route::get('/', [MediaController::class, 'index'])->name('media.index');
 
-    Route::resource('/dashboard', DashboardController::class)->names('media-dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('media.dashboard');
+    Route::get('/guide', [DashboardController::class, 'guide'])->name('media.guide');
 
     Route::resource('/folders', MediaFolderController::class)->names('media-folders');
 
@@ -25,6 +27,8 @@ Route::prefix('media')->group(function () {
     Route::resource('/tags', MediaTagController::class)->names('media-tags');
 
     Route::resource('/metadata', MediaMetadataController::class)->names('media-metadata');
+
+    Route::resource('/logs', MedialogController::class)->names('media-logs');
 
 });
 
