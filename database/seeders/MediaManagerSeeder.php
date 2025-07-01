@@ -20,14 +20,8 @@ class MediaManagerSeeder extends Seeder
 
         // Tạo 3 users demo
         User::factory()->count(3)->create()->each(function ($user) {
-            // Tạo thư mục gốc của người dùng
-            $rootFolder = MediaFolder::create([
-                'user_id' => $user->id,
-                'parent_id' => null,
-                'name' => 'Root Folder - ' . $user->name,
-                'path' => Str::slug('Root Folder - ' . $user->name),
-                'depth' => 0,
-            ]);
+            // Thư mục gốc của người dùng được tạo tự động sau khi user sign-up
+            $rootFolder = $user->folders()->first();
 
             $permissions = [
                 'view', 'edit', 'delete', 'upload'
@@ -40,7 +34,7 @@ class MediaManagerSeeder extends Seeder
                 return MediaFolder::create([
                     'user_id' => $user->id,
                     'parent_id' => $rootFolder->id,
-                    'name' => $folderName,
+                    'name' => preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $folderName),
                     'slug' => Str::slug($folderName),
                     'path' => $rootFolder->path . '/' . Str::slug($folderName),
                     'depth' => $depth,

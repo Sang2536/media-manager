@@ -14,14 +14,17 @@ class MediaFolderControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    //  Test tạo folder
+    //  @test G1: Test tạo folder (thuoojc root folder)
     #[Test]
-    public function test_user_can_create_folder()
+    public function test_user_can_create_folder_under_root()
     {
         $this->withoutExceptionHandling();
 
         $user = User::factory()->create();
         $this->actingAs($user);
+
+        // Lấy thư mục gốc đã được tạo cùng user
+        $rootFolder = MediaFolderHelper::getRootFolder($user->id);
 
         $response = $this->post(route('media-folders.store'), [
             'folder_name' => 'New Folder',
@@ -29,19 +32,22 @@ class MediaFolderControllerTest extends TestCase
 
         $response->assertRedirect(route('media-folders.index'));
 
-        $this->assertDatabaseHas('media_folders', [
-            'user_id' => $user->id,
-            'name' => 'New Folder',
-        ]);
-
+        // ✅ Kiểm tra root folder tồn tại
         $this->assertDatabaseHas('media_folders', [
             'user_id' => $user->id,
             'parent_id' => null,
-            'name' => '/',
+            'name' => 'Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name),
+        ]);
+
+        // ✅ Kiểm tra folder mới được tạo nằm trong thư mục gốc
+        $this->assertDatabaseHas('media_folders', [
+            'user_id' => $user->id,
+            'name' => 'New Folder',
+            'parent_id' => $rootFolder->id,
         ]);
     }
 
-    //  Test sửa folder
+    //  @test G2: Test sửa folder
     #[Test]
     public function test_user_can_update_folder()
     {
@@ -73,7 +79,7 @@ class MediaFolderControllerTest extends TestCase
         ]);
     }
 
-    //  Test không thể sửa folder của người khác
+    //  @test G3: Test không thể sửa folder của người khác
     #[Test]
     public function test_user_cannot_update_folder_of_another_user()
     {
@@ -101,7 +107,7 @@ class MediaFolderControllerTest extends TestCase
         $this->assertDatabaseHas('media_folders', ['id' => $folder->id]);
     }
 
-    //  Test xóa folder hợp lệ
+    //  @test G4: Test xóa folder hợp lệ
     #[Test]
     public function test_user_can_delete_own_folder()
     {
@@ -130,7 +136,7 @@ class MediaFolderControllerTest extends TestCase
         ]);
     }
 
-    //  Test không thể xóa root folder
+    //  @test G5: Test không thể xóa root folder
     #[Test]
     public function test_user_cannot_delete_root_folder()
     {
@@ -138,13 +144,13 @@ class MediaFolderControllerTest extends TestCase
         $this->actingAs($user);
 
         $rootFolder = MediaFolderHelper::getRootFolder($user->id);
-        $response = $this->delete(route('media-folders.destroy', $rootFolder));
+        $response = $this->deleteJson(route('media-folders.destroy', $rootFolder));
 
         $response->assertStatus(400);
         $this->assertDatabaseHas('media_folders', ['id' => $rootFolder->id]);
     }
 
-    //  Test không thể xóa folder của người khác
+    //  @test G6: Test không thể xóa folder của người khác
     #[Test]
     public function test_user_cannot_delete_folder_of_another_user()
     {
@@ -169,7 +175,7 @@ class MediaFolderControllerTest extends TestCase
         $this->assertDatabaseHas('media_folders', ['id' => $folder->id]);
     }
 
-    //  Test không thể xóa folder chứa file
+    //  @test G7: Test không thể xóa folder chứa file
     #[Test]
     public function test_user_cannot_delete_folder_with_files()
     {

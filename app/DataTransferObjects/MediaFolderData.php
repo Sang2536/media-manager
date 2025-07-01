@@ -48,7 +48,7 @@ class MediaFolderData
         );
     }
 
-    public static function fromExisting(MediaFolder $folder, string $newName, ?int $newParentId = null): self
+    public static function fromExisting(MediaFolder $folder, string $newName, ?int $newParentId = null, array $extra = []): self
     {
         return new self(
             userId: $folder->user_id,
@@ -60,13 +60,13 @@ class MediaFolderData
             storage: $folder->storage,
             kind: $folder->kind,
             folderType: $folder->folder_type,
-            isLocked: $folder->is_locked,
-            isShared: $folder->is_shared,
-            isFavorite: $folder->is_favorite,
-            thumbnail: $folder->thumbnail,
-            comments: $folder->comments,
-            permissions: $folder->permissions,
-            lastOpenedAt: $folder->last_opened_at,
+            isLocked: $extra['is_locked'] ?? $folder->is_locked,
+            isShared: $extra['is_shared'] ?? $folder->is_shared,
+            isFavorite: $extra['is_favorite'] ?? $folder->is_favorite,
+            thumbnail: $extra['thumbnail'] ?? $folder->thumbnail,
+            comments: $extra['comments'] ?? $folder->comments,
+            permissions: $extra['permissions'] ?? $folder->permissions,
+            lastOpenedAt: $extra['last_opened_at'] ?? $folder->last_opened_at,
         );
     }
 

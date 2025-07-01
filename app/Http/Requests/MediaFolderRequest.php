@@ -7,6 +7,7 @@ use App\Helpers\MediaFolderHelper;
 use App\Models\MediaFolder;
 use App\Traits\HasDto;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class MediaFolderRequest extends FormRequest
 {
@@ -17,12 +18,28 @@ class MediaFolderRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_shared' => $this->boolean('is_shared'),
+            'is_locked' => $this->boolean('is_locked'),
+            'is_favorite' => $this->boolean('is_favorite'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
+            'active_tab' => ['string', 'in:select,breadcrumb,area'],
             'folder_id' => ['nullable', 'exists:media_folders,id'],
-            'breadcrumb_path' => ['nullable', 'string', 'max:255', 'regex:/^[\pL\pN\s_\-\/]+$/u'],
-            'folder_name' => ['nullable', 'required_without:breadcrumb_path', 'string', 'max:255', 'regex:/^[\pL\pN\s_\-]+$/u'],
+            'breadcrumb_path' => [
+                Rule::requiredIf(fn() => $this->input('active_tab') === 'breadcrumb'),
+                'nullable', 'string', 'max:255', 'regex:/^[\pL\pN\s_\-\/]+$/u'
+            ],
+            'folder_name' => [
+                Rule::requiredIf(fn() => $this->input('active_tab') === 'select'),
+                'nullable', 'string', 'max:255', 'regex:/^[\pL\pN\s_\-]+$/u'
+            ],
             'slug' => ['nullable', 'string'],
             'path' => ['nullable', 'string'],
             'depth' => ['nullable', 'integer'],
@@ -70,12 +87,22 @@ class MediaFolderRequest extends FormRequest
         );
     }
 
-    public function toUpdateDto(MediaFolder $folder): MediaFolderData
+    public function toUpdateDto(MediaFolder $folder, int $userId): MediaFolderData
     {
         return MediaFolderData::fromExisting(
             folder: $folder,
             newName: $this->folderName(),
-            newParentId: $this->validatedParentId($this->user()->id),
+            newParentId: $this->input('folder_id') ? $this->validatedParentId($userId) : $folder->parent_id,
+            extra: [
+                'is_locked' => $this->boolean('is_locked'),
+                'is_favorite' => $this->boolean('is_favorite'),
+                'is_shared' => $this->boolean('is_shared'),
+                'comments' => $this->input('comments'),
+                'thumbnail' => $this->input('thumbnail'),
+                'permissions' => $this->input('permissions'),
+                'last_opened_at' => $this->input('last_opened_at'),
+            ]
         );
     }
+
 }

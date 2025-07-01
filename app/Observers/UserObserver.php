@@ -12,13 +12,18 @@ class UserObserver
         MediaFolder::create([
             'user_id'   => $user->id,
             'parent_id' => null,
-            'name'      => 'Root - ' . $user->name,
+            'name'      => 'Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name),
             'slug'      => null,
-            'path'      => '/',
+            'path'      => '',
             'depth'     => 0,
             'storage'   => 'local',
             'kind'      => 'folder',
             'is_locked' => true, // Root folder không xoá được
         ]);
+    }
+
+    public function deleting(User $user): void
+    {
+        $user->mediaFolders()->delete();
     }
 }

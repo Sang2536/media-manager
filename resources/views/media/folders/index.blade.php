@@ -44,6 +44,7 @@
             <x-breadcrumb
                 :breadcrumbs="$breadcrumbs"
                 :view-mode="$view"
+                separate="▸"
                 :route-action="[
                     'index' => route('media-folders.index')
                 ]"
@@ -61,7 +62,12 @@
                     >
                         <a href="{{ route('media-folders.index', ['parent' => $folder->id, 'view' => 'grid']) }}" class="block">
                             <div class="text-6xl mb-2">📁</div>
-                            <div class="font-semibold text-lg truncate">{{ $folder->name }}</div>
+                            <div class="font-semibold text-lg truncate">
+                                @if ($folder->is_locked)
+                                    🔒
+                                @endif
+                                {{ $folder->name }}
+                            </div>
                             <div class="my-2">👤 {{ $folder->user->name }}</div>
                             <div class="text-sm text-gray-500 mt-1">
                                 {{ $folder->children()->count() }} thư mục - {{ $folder->files()->count() }} ảnh
@@ -73,7 +79,7 @@
                                 Xem
                             </button>
 
-                            @if ($folder->parent_id)
+                            @if ($folder->parent_id && !$folder->is_locked)
                                 <a href="{{ route('media-folders.edit', $folder->id) }}"
                                    class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
                                     Sửa
@@ -98,20 +104,25 @@
             <div class="bg-white shadow rounded-xl overflow-hidden">
                 <x-table
                     :view-mode="$view"
-                    :headers="['Folder', 'User', 'Folder con - Ảnh', 'Created at', 'Action']"
+                    :headers="['ID', 'Folder', 'Internal', 'Created by', 'Created at', 'Action']"
                 >
                     {{-- Table body --}}
                     @forelse ($folders as $folder)
                         <tr class="hover:bg-gray-100 transition cursor-pointer"
                             onclick="window.location='{{ route('media-folders.index', ['parent' => $folder->id, 'view' => $view]) }}'">
+                            <td class="px-6 py-4">{{ $folder->id }}</td>
                             <td class="px-6 py-4 flex items-center gap-2">
+                                @if ($folder->is_locked) 🔒@endif
+                                @if ($folder->is_shared) 🔗 @endif
                                 <span>📁</span>
                                 <span>{{ $folder->name }}</span>
                             </td>
-                            <td class="px-6 py-4">👤 {{ $folder->user->name }}</td>
                             <td class="px-6 py-4">
-                                📁 Folder con: {{ $folder->children()->count() }} <br />
-                                🖼️ Ảnh: {{ $folder->files()->count() }}
+                                📁 Folder: {{ $folder->children()->count() }} <br />
+                                🖼️ File: {{ $folder->files()->count() }}
+                            </td>
+                            <td class="flex px-6 py-4">
+                                👤 {{ $folder->user->name }}
                             </td>
                             <td class="px-6 py-4">{{ $folder->created_at }}</td>
                             <td class="px-6 py-4 flex items-center gap-4"
@@ -122,7 +133,7 @@
                                         Xem
                                     </button>
 
-                                    @if ($folder->parent_id)
+                                    @if ($folder->parent_id && !$folder->is_locked)
                                         <a href="{{ route('media-folders.edit', $folder->id) }}"
                                            class="flex-1 text-center text-yellow-700 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded min-w-0">
                                             Sửa
