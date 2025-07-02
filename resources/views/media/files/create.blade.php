@@ -10,17 +10,33 @@
     <div class="max-w-3xl mx-auto py-8 px-4">
         <h1 class="text-2xl font-bold mb-6">🆕 Thêm Media Mới</h1>
 
+        @if ($errors->any())
+            <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                <strong>Đã xảy ra lỗi:</strong>
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('media-files.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('POST')
 
-            {{-- File upload đẹp --}}
+            {{-- File upload --}}
             <div>
                 <label class="block font-semibold mb-1">📁 Chọn file <span class="text-red-500">*</span></label>
                 <div class="relative border border-gray-300 rounded-lg px-4 py-3 bg-white shadow-sm">
-                    <input type="file" name="file" required
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <input type="file" name="file" id="file-input" accept="image/*"
+                           required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <div class="text-gray-600 pointer-events-none">Chọn tệp từ máy tính...</div>
+                </div>
+
+                {{-- Preview hình ảnh --}}
+                <div id="image-preview-container" class="mt-3 hidden">
+                    <img id="preview-image" src="" alt="Preview" class="max-h-64 rounded border shadow">
                 </div>
             </div>
 
@@ -53,9 +69,9 @@
                 <label class="block font-semibold mb-1">🧾 Metadata</label>
                 <div id="meta-wrapper" class="space-y-2">
                     <div class="flex gap-2">
-                        <input type="text" name="metadata[0][key]" placeholder="Key" class="w-1/2 border px-2 py-1 rounded">
-                        <input type="text" name="metadata[0][value]" placeholder="Value" class="w-1/2 border px-2 py-1 rounded">
-                        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-lg">&times;</button>
+{{--                        <input type="text" name="metadata[0][key]" placeholder="Key" class="w-1/2 border px-2 py-1 rounded">--}}
+{{--                        <input type="text" name="metadata[0][value]" placeholder="Value" class="w-1/2 border px-2 py-1 rounded">--}}
+{{--                        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-lg">&times;</button>--}}
                     </div>
                 </div>
                 <button type="button" onclick="addMetaField()" class="text-blue-600 hover:underline text-sm mt-2">➕ Thêm metadata</button>

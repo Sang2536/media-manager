@@ -10,51 +10,53 @@
     <div class="max-w-3xl mx-auto py-8 px-4">
         <h1 class="text-2xl font-bold mb-6">🆕 Cập nhật Media</h1>
 
+        @if ($errors->any())
+            <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                <strong>Đã xảy ra lỗi:</strong>
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('media-files.update', $file) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
-            {{-- Show file dạng ảnh --}}
-            <div>
-                <img src="{{ $file->image_url }}"
-                     alt="{{ $file->original_name }}"
-                     class="w-full h-auto object-cover" />
-                <p class="text-sm text-gray-500">
-                    {{ asset($file->path) }}
-                </p>
-            </div>
-
-            {{-- File đã upload (Không thể upload lại file) --}}
+            {{-- File đã upload --}}
             <div>
                 <label class="block font-semibold mb-1">📁 Chọn file <span class="text-red-500">*</span></label>
 
                 <div class="relative border border-gray-300 rounded-lg px-4 py-3 bg-white shadow-sm">
+                    <input
+                        type="file"
+                        name="file"
+                        id="file-input"
+                        accept="image/*"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    >
 
-                    {{-- Input upload (ẩn nhưng chiếm toàn bộ khu vực click) --}}
-{{--                    <input--}}
-{{--                        type="file"--}}
-{{--                        name="file"--}}
-{{--                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"--}}
-{{--                    >--}}
-
-                    {{-- Hiển thị tên file cũ nếu có --}}
                     <div class="text-gray-600 pointer-events-none">
                         {{ $file->filename ? "Đã tải: " . basename($file->filename) : "Chọn tệp từ máy tính..." }}
                     </div>
                 </div>
 
-                {{-- Hiển thị xem trước nếu là ảnh (nếu muốn) --}}
-                @if(Str::startsWith($file->mime_type, 'image/') && Storage::exists($file->path))
-                    <div class="mt-3">
-                        <img src="{{ Storage::url($file->path) }}" class="w-32 h-auto rounded border shadow">
-                    </div>
-                @endif
+                <div id="image-preview-container" class="mt-3 {{ $file->image_url ? '' : 'hidden' }}">
+                    <img
+                        id="preview-image"
+                        src="{{ $file->image_url ?? '' }}"
+                        alt="Image preview"
+                        class="max-h-64 rounded border shadow"
+                    >
+                </div>
             </div>
 
             {{-- Tên file gốc --}}
             <div>
-                <label class="block font-semibold mb-1">📝 Tên file (tùy chọn)</label>
-                <input type="text" name="original_name"
+                <label class="block font-semibold mb-1">📝 Tên file (tùy chỉnh)</label>
+                <input type="text" name="filename"
                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"
                        placeholder="Tên gợi nhớ cho file"
                         value="{{ $file->filename }}">
@@ -78,15 +80,14 @@
                 </select>
             </div>
 
-
             {{-- Metadata key-value động bằng JS --}}
             <div>
                 <label class="block font-semibold mb-1">🧾 Metadata</label>
                 <div id="meta-wrapper" class="space-y-2">
                     <div class="flex gap-2">
-                        <input type="text" name="metadata[0][key]" placeholder="Key" class="w-1/2 border px-2 py-1 rounded">
-                        <input type="text" name="metadata[0][value]" placeholder="Value" class="w-1/2 border px-2 py-1 rounded">
-                        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-lg">&times;</button>
+{{--                        <input type="text" name="metadata[0][key]" placeholder="Key" class="w-1/2 border px-2 py-1 rounded">--}}
+{{--                        <input type="text" name="metadata[0][value]" placeholder="Value" class="w-1/2 border px-2 py-1 rounded">--}}
+{{--                        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-lg">&times;</button>--}}
                     </div>
                 </div>
                 <button type="button" onclick="addMetaField()" class="text-blue-600 hover:underline text-sm mt-2">➕ Thêm metadata</button>

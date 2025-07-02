@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTransferObjects\MediaFileData;
 use App\Helpers\MediaFileHelper;
 use App\Helpers\MediaFolderHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Requests\MediaFileRequest;
 use App\Models\MediaFile;
 use App\Models\MediaFolder;
@@ -58,22 +59,14 @@ class MediaFileController extends Controller
      */
     public function store(MediaFileRequest $request)
     {
-        $file = $request->file('file');
-        $folder = MediaFolder::findOrFail($request->input('folder_id'));
+        try {
+            $dto = MediaFileData::fromRequest($request);
+            MediaFileHelper::handleUploadFromDto($dto);
 
-        $path = MediaFileHelper::storeUploadedFile($file, $folder);
-
-        $dto = new MediaFileData(
-            userId: auth()->id() ?? 1,
-            file: $file,
-            path: $path,
-            mediaFolderId: $folder->id
-        );
-
-        $mediaFile = MediaFileHelper::createMediaFileFromDto($dto);
-        MediaFileHelper::attachRandomTags($mediaFile);
-
-        return redirect()->route('media-files.index')->with('success', 'Media đã được tải lên');
+            return ResponseHelper::result(true, '📤 Media đã được tải lên thành công', 200, route('media-files.index'));
+        } catch (\Throwable $e) {
+            return ResponseHelper::result(false, 'Lỗi khi tải lên: ' . $e->getMessage(), 400);
+        }
     }
 
     /**
@@ -112,16 +105,27 @@ class MediaFileController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(MediaFileRequest $request, MediaFile $file)
     {
-        //
+        try {
+            $dto = MediaFileData::fromRequest($request, $file);
+            MediaFileHelper::handleUploadFromDto($dto, $file);
+
+            return ResponseHelper::result(true, '✅ Media đã được cập nhật thành công.', 200, route('media-files.index'));
+        } catch (\Throwable $e) {
+            return ResponseHelper::result(false, 'Lỗi cập nhật: ' . $e->getMessage(), 400);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(MediaFile $file)
     {
-        //
+        $file->delete();
+
+        return redirect()->route('media-files.index')
+            ->with('success', '🗑️ Media đã được xoá thành công.');
     }
 }

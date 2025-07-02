@@ -76,7 +76,7 @@
                                 </div>
                                 <div class="flex justify-between items-center text-xs border border-gray-300 bg-gray-50 rounded">
                                     <div class="ml-2 truncate text-gray-700 w-4/6" title="{{ asset($file->path) }}">
-                                        {{ asset($file->path) }}
+                                        {{ $file->image_url }}
                                     </div>
                                     <button onclick="copyToClipboard('{{ asset($file->path) }}')"
                                             class="ml-2 border border-gray-300 hover:bg-gray-300 font-semibold rounded-none px-2 py-2 text-xs">

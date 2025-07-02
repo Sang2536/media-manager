@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('media_folder_id')->constrained()->onDelete('cascade');
             $table->foreignId('media_tag_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            $table->unique(['media_folder_id', 'media_tag_id']);
         });
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\MediaFile;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MediaFileRequest extends FormRequest
@@ -14,15 +15,17 @@ class MediaFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file'      => 'nullable|file|max:10240|mimes:jpg,jpeg,png,webp,gif,mp4',
-            'file_name'      => 'nullable|string|max:255',
-            'folder_id' => 'nullable|exists:media_folders,id',
+            'file' => ['nullable', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp,gif,mp4'],
 
-            'tags'      => 'nullable|array',
-            'tags.*'    => 'integer|exists:media_tags,id',
+            'filename' => ['nullable', 'string', 'max:255'],
+            'folder_id'     => ['required', 'exists:media_folders,id'],
 
-            'metadata'  => 'nullable|array',
-            'metadata.*' => 'string',
+            'tags'      => ['nullable', 'array'],
+            'tags.*'    => ['integer', 'exists:media_tags,id'],
+
+            'metadata'       => ['nullable', 'array'],
+            'metadata.*.key'   => ['required_with:metadata', 'string', 'max:255'],
+            'metadata.*.value' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
