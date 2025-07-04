@@ -2,11 +2,15 @@
 
 
 //  Mở Modal
-function openModal(route, view = 'grid') {
+function openModal(route) {
     const modal = document.getElementById('wrapperModal');
     const modalContent = document.getElementById('modalContent');
 
-    let url = route + "?view=" + view;
+    if (!modal || !modalContent) return;
+
+    const view = modalContent.getAttribute('data-view');
+
+    let url = (!view) ? route : route + "?view=" + view;
 
     fetch(url)
         .then(res => res.text())

@@ -28,25 +28,35 @@
 
         {{-- Nhóm nút chức năng --}}
         <div class="flex gap-2">
+            @if ($viewMode)
+                <x-button
+                    id="{{ 'collapseFilter-' . uniqid() }}"
+                    class="inline-flex items-center gap-2 border border-yellow-500 bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600 transition shadow"
+                    name-btn="🧹 Bộ lọc"
+                    data-toggle="collapse"
+                    data-target="#collapse-filter"
+                />
+            @endif
+
             <x-button
                 class="inline-flex items-center gap-2 border border-cyan-500 bg-cyan-500 text-white px-5 py-2 rounded-lg hover:bg-cyan-600 transition shadow"
                 name-btn="🔄 Làm mới"
                 onclick="window.location.href = window.location.origin + window.location.pathname"
             />
 
-            <x-button
-                id="{{ 'collapseFilter-' . uniqid() }}"
-                class="inline-flex items-center gap-2 border border-yellow-500 bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600 transition shadow"
-                name-btn="🧹 Bộ lọc"
-                data-toggle="collapse"
-                data-target="#collapse-filter"
-            />
-
-            <x-button
-                :href="$routeAction['create']"
-                class="inline-flex items-center gap-2 border border-green-600 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition shadow"
-                name-btn="➕ Thêm"
-            />
+            @if(isset($routeAction['modalCreate']) && $routeAction['modalCreate'] = true)
+                <x-button
+                    onclick="openModal('{{ $routeAction['create'] }}')"
+                    class="inline-flex items-center gap-2 border border-green-600 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition shadow"
+                    name-btn="➕ Thêm"
+                />
+            @else
+                <x-button
+                    :href="$routeAction['create']"
+                    class="inline-flex items-center gap-2 border border-green-600 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition shadow"
+                    name-btn="➕ Thêm"
+                />
+            @endif
 
             @if($buttonDropdown)
                 <x-dropdown

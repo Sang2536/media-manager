@@ -12,6 +12,7 @@
                     'mode' => route('media-tags.index', ['view' => 'grid']),
                     'create' => route('media-tags.create'),
                     'destroy' => '#',
+                    'modalCreate' => true,
                 ]"
                 :button-dropdown="[
                     'title' => '⚙️ Tác vụ khác',
@@ -31,6 +32,7 @@
             />
         </div>
 
+        {{-- Content --}}
         <div class="flex flex-col">
             <div class="flex te flex-wrap gap-2">
                 @forelse ($tags as $tag)
@@ -38,6 +40,16 @@
                 @empty
                     <span class="text-gray-400 italic">Không có tag</span>
                 @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal wrapper -->
+    <div id="wrapperModal" class="hidden relative z-10" aria-labelledby="dialog-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <!-- Modal content -->
+            <div  id="modalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+                Loading ...
             </div>
         </div>
     </div>
