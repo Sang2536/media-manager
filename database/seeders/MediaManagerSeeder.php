@@ -23,6 +23,20 @@ class MediaManagerSeeder extends Seeder
             // Thư mục gốc của người dùng được tạo tự động sau khi user sign-up
             $rootFolder = $user->folders()->first();
 
+            if (!$rootFolder) {
+                $rootFolder = MediaFolder::create([
+                    'user_id'   => $user->id,
+                    'parent_id' => null,
+                    'name'      => 'Root - ' . preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $user->name),
+                    'slug'      => null,
+                    'path'      => '',
+                    'depth'     => 0,
+                    'storage'   => 'local',
+                    'kind'      => 'folder',
+                    'is_locked' => true,
+                ]);
+            }
+
             $permissions = [
                 'view', 'edit', 'delete', 'upload'
             ];

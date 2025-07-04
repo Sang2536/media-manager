@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsModelEvents;
 use Illuminate\Database\Eloquent\Model;
 
 class MediaTag extends Model
 {
+    use LogsModelEvents;
+
     protected $table = 'media_tags';
 
     protected $fillable = [

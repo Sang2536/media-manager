@@ -28,6 +28,7 @@ return new class extends Migration
             $table->ipAddress('ip')->nullable(); // IP người dùng
             $table->string('user_agent', 1024)->nullable(); // Trình duyệt/người dùng
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -35,6 +35,7 @@ return new class extends Migration
             $table->json('permissions')->nullable();
 
             $table->timestamp('last_opened_at')->nullable(); // lần mở cuối cùng
+            $table->softDeletes();
             $table->timestamps();
         });
     }

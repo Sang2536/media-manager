@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\LogsModelEvents;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MediaFolder extends Model
 {
+    use SoftDeletes, LogsModelEvents;
+
     protected $table = 'media_folders';
 
     protected $fillable = [
