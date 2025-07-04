@@ -29,6 +29,6 @@ Route::prefix('media')->group(function () {
     Route::resource('/metadata', MediaMetadataController::class)->names('media-metadata');
 
     Route::resource('/logs', MedialogController::class)->names('media-logs');
-
+    Route::delete('/logs/clear', [MediaLogController::class, 'clear'])->name('media-logs.clear');
 });
 

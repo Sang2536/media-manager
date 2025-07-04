@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\LogsModelEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class MediaFile extends Model
 {
+    use SoftDeletes, LogsModelEvents;
+
     protected $table = 'media_files';
 
     protected $fillable = [
