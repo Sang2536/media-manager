@@ -169,12 +169,8 @@
     <div id="wrapperModal" class="hidden relative z-10" aria-labelledby="dialog-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen">
             <!-- Modal content -->
-            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-                <button onclick="closeModal()"
-                        class="absolute top-2 right-3 text-gray-400 hover:text-red-500 text-xl font-bold">&times;</button>
-                <div id="modalContent" class="text-gray-800">
-                    Đang tải...
-                </div>
+            <div  id="modalContent" class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative" data-view="{{ $view }}">
+                Loading ...
             </div>
         </div>
     </div>

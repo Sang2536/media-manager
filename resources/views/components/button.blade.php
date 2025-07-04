@@ -1,18 +1,23 @@
-@php
-    $tag = $tag;
+@props([
+    'href' => null,
+    'onclick' => null,
+    'type' => 'button',
+    'target' => null,
+    'nameBtn' => '',
+    'class' => '',
+])
 
-    $class = $class ?? 'mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto';
+@php
+    $isLink = filled($href);
+    $tag = $isLink ? 'a' : 'button';
+    $finalHref = $href ?? 'javascript:void(0)';
 @endphp
 
 <{{ $tag }}
     @if($id) id="{{ $id }}" @endif
-
-    @if($tag === 'a')
-        href="{{ $href }}"
-    @else
-        type="{{ $type }}"
-    @endif
-
+    @if ($isLink) href="{{ $finalHref }}" @else type="{{ $type }}" @endif
+    @if ($onclick) onclick="{{ $onclick }}" @endif
+    @if ($target) target="{{ $target }}" @endif
     {{ $attributes->merge(['class' => $class]) }}
 >
     @isset($iconLeft)

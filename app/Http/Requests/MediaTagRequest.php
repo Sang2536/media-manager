@@ -3,26 +3,52 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class MediaTagRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
+        $tagId = $this->route('tag')?->id;
+
+        $rules = [];
+
+        if ($this->isMethod('post')) {
+            $rules['names'] = ['required', 'string'];
+        } else {
+            $rules['name'] = [
+                'required',
+                'max:255',
+                Rule::unique('media_tags', 'name')->ignore($tagId),
+            ];
+        }
+
+        $rules['color'] = ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'];
+
+        return $rules;
+    }
+
+    public function attributes(): array
+    {
         return [
-            'name' => 'required|unique:media_tags,name|max:255'
+            'names' => 'Tên các thẻ',
+            'name'  => 'Tên thẻ',
+            'color' => 'Màu sắc',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'names.required' => 'Vui lòng nhập ít nhất một tên tag.',
+            'name.required'  => 'Vui lòng nhập tên thẻ.',
+            'name.unique'    => 'Tên thẻ đã tồn tại.',
+            'color.regex'    => 'Màu sắc phải đúng định dạng mã HEX (vd: #ff0000).',
         ];
     }
 }
