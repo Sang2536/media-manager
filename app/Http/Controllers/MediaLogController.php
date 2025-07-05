@@ -13,6 +13,13 @@ class MediaLogController extends Controller
 
         $logs->transform(function ($log) {
             $enum = LogActionEnum::fromAction($log->action);
+
+            $hasError = stripos($log->action, 'error');
+            if ($hasError !== false) {
+                $enum = LogActionEnum::fromAction(LogActionEnum::ERROR->value);
+                $log->hasError = true;
+            }
+
             $log->action_icon = $enum?->icon() ?? '⚙️';
             $log->action_color = $enum?->badgeColor() ?? [
                 'bg' => 'bg-gray-100',

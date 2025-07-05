@@ -16,17 +16,19 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
 
             // Mô tả hành động
-            $table->string('action'); // ví dụ: create, update, delete, upload, rename...
-            $table->string('target_type'); // media_file, media_folder, media_tag, ...
-            $table->unsignedBigInteger('target_id')->nullable(); // ID của bản ghi bị tác động
+            $table->string('action');
+            $table->string('target_type');
+            $table->unsignedBigInteger('target_id')->nullable();
 
             // Thông tin bổ sung
-            $table->text('description')->nullable(); // mô tả chi tiết hành động
-            $table->json('data')->nullable(); // chứa dữ liệu snapshot trước/sau nếu cần
+            $table->string('status')->nullable();
+            $table->string('type')->nullable();
+            $table->text('description')->nullable();
+            $table->json('data')->nullable();
 
             //  Thông tin người thao tác
-            $table->ipAddress('ip')->nullable(); // IP người dùng
-            $table->string('user_agent', 1024)->nullable(); // Trình duyệt/người dùng
+            $table->ipAddress('ip')->nullable();
+            $table->string('user_agent', 1024)->nullable();
 
             $table->softDeletes();
             $table->timestamps();

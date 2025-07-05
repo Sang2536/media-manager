@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MediaFolderResource;
 use App\Models\MediaFolder;
@@ -22,9 +23,11 @@ class MediaFolderController extends Controller
             return MediaFolderResource::collection($folders);
         } catch (\Exception $e) {
             MediaLogService::custom(
-                'Get Api Folder Error',
+                'Get Api Error',
                 'Media Folder',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Failed to fetch folders. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',
@@ -49,9 +52,11 @@ class MediaFolderController extends Controller
             return new MediaFolderResource($folder);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             MediaLogService::custom(
-                'Get Api Folder Error',
+                'Get Api Error',
                 'Media Folder',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Folder not found. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',
@@ -63,9 +68,11 @@ class MediaFolderController extends Controller
             ], 404);
         } catch (\Exception $e) {
             MediaLogService::custom(
-                'Get Api Folder Error',
+                'Get Api Error',
                 'Media Folder',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Failed to fetch folder. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',

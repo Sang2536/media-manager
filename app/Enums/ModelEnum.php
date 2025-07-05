@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum LogModelEnum: string
+enum ModelEnum: string
 {
     case MODEL = 'model';
     case MEDIA = 'media';

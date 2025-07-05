@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -20,10 +21,12 @@ class UserController extends Controller
 
             if (!$user) {
                 MediaLogService::custom(
-                    'Get Api User Error',
+                    'Get Api Error',
                     'User',
                     $request->user()->id ?? null,
-                    'User not found.',
+                    StatusEnum::FAILED->value,
+                    'api:crud:not_found',
+                    'User not found. ',
                     [
                         'log_type' => 'system:api',
                     ]
@@ -38,9 +41,11 @@ class UserController extends Controller
 
         } catch (\Exception $e) {
             MediaLogService::custom(
-                'Get Api User Error',
+                'Get Api Error',
                 'User',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Something went wrong. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',
