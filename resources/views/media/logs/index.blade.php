@@ -31,7 +31,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white shadow rounded-xl overflow-hidden">
-            <x-table :headers="['ID', 'User', 'Action', 'Model', 'Description', 'Created at']">
+            <x-table :headers="['ID', 'User', 'Action', 'Status', 'Description', 'Created at']">
                 @forelse ($logs as $log)
                     <tr class="hover:bg-gray-50 transition cursor-pointer border-b">
                         <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ $log->id }}</td>
@@ -44,14 +44,20 @@
                         <td class="px-6 py-4 text-sm bg">
                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold {{ $log->action_color['bg'] }} {{ $log->action_color['text'] }}">
                                 <span>{{ $log->action_icon }}</span>
-                                <span class="capitalize">{{ $log->action }}</span>
+                                <span class="capitalize">{{ $log->hasError ? str_replace('Error', '', $log->action) : $log->action }}</span>
                             </span>
+                            <div class="mt-1 px-2 py-1 text-xs text-gray-500">
+                                <span class="font-semibold">{{ Str::headline($log->target_type) }}</span>
+                                @if ($log->target_id)
+                                    <span class="text-gray-400">#{{ $log->target_id }}</span>
+                                @endif
+                            </div>
                         </td>
 
                         <td class="px-6 py-4 text-sm text-gray-700">
-                            <span class="font-semibold">{{ Str::headline($log->target_type) }}</span>
-                            @if ($log->target_id)
-                                <span class="text-gray-400">#{{ $log->target_id }}</span>
+                            <span class="font-semibold">{{ $log->status }}</span><br />
+                            @if ($log->type)
+                                <span class="text-gray-400">#{{ $log->type }}</span>
                             @endif
                         </td>
 

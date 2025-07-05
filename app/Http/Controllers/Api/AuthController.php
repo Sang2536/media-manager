@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\MediaLogService;
@@ -15,18 +17,16 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         // Validation
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        $validator = Validator::make($request->all(), UserRequest::rules(), UserRequest::messages());
 
         if ($validator->fails()) {
             MediaLogService::custom(
                 'Register Error',
                 'User',
                 $request->user()->id ?? null,
-                'Validation errors. Errors: ' . $validator->errors(),
+                StatusEnum::FAILED->value,
+                'api:crud:validator',
+                'Validation errors. Errors: ' . $validator->errors()->messages(),
                 [
                     'log_type' => 'system:api',
                 ]
@@ -63,17 +63,16 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Validation
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+        $validator = Validator::make($request->all(), UserRequest::rules(), UserRequest::messages());
 
         if ($validator->fails()) {
             MediaLogService::custom(
                 'Login Error',
                 'User',
                 $request->user()->id ?? null,
-                'Validation errors. Errors: ' . $validator->errors(),
+                StatusEnum::FAILED->value,
+                'api:crud:validator',
+                'Validation errors. Errors: ' . $validator->errors()->messages(),
                 [
                     'log_type' => 'system:api',
                 ]
@@ -95,7 +94,9 @@ class AuthController extends Controller
                 'Login Error',
                 'User',
                 $request->user()->id ?? null,
-                'Validation errors. Errors: ' . $validator->errors(),
+                StatusEnum::FAILED->value,
+                'api:crud:validator',
+                'Validation errors. Errors: ' . $validator->errors()->messages(),
                 [
                     'log_type' => 'system:api',
                 ]

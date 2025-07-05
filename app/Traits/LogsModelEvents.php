@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\LogActionEnum;
+use App\Enums\StatusEnum;
 use App\Services\MediaLogService;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;
@@ -13,9 +14,12 @@ trait LogsModelEvents
     {
         static::created(fn($model) =>
             self::tryLog(fn() =>
-                MediaLogService::created(
+                MediaLogService::custom(
+                    action: LogActionEnum::CREATED->value,
                     targetType: class_basename($model),
                     targetId: $model->id,
+                    status: StatusEnum::SUCCESS->value,
+                    type: 'crud',
                     description: LogActionEnum::CREATED->value,
                     data: $model->toArray()
                 ),
@@ -26,9 +30,12 @@ trait LogsModelEvents
 
         static::updated(fn($model) =>
             self::tryLog(fn() =>
-                MediaLogService::updated(
+                MediaLogService::custom(
+                    action: LogActionEnum::UPDATED->value,
                     targetType: class_basename($model),
                     targetId: $model->id,
+                    status: StatusEnum::SUCCESS->value,
+                    type: 'crud',
                     description: LogActionEnum::UPDATED->value,
                     data: $model->getChanges()
                 ),
@@ -39,9 +46,12 @@ trait LogsModelEvents
 
         static::deleted(fn($model) =>
             self::tryLog(fn() =>
-                MediaLogService::deleted(
+                MediaLogService::custom(
+                    action: LogActionEnum::DELETED->value,
                     targetType: class_basename($model),
                     targetId: $model->id,
+                    status: StatusEnum::SUCCESS->value,
+                    type: 'crud',
                     description: LogActionEnum::DELETED->value . ' (soft)',
                     data: $model->toArray()
                 ),
@@ -53,9 +63,12 @@ trait LogsModelEvents
         if (self::supportsSoftDeletes()) {
             static::restored(fn($model) =>
                 self::tryLog(fn() =>
-                    MediaLogService::restored(
+                    MediaLogService::custom(
+                        action: LogActionEnum::RESTORED->value,
                         targetType: class_basename($model),
                         targetId: $model->id,
+                        status: StatusEnum::SUCCESS->value,
+                        type: 'crud',
                         description: LogActionEnum::RESTORED->value,
                         data: $model->toArray()
                     ),
@@ -66,9 +79,12 @@ trait LogsModelEvents
 
             static::forceDeleted(fn($model) =>
                 self::tryLog(fn() =>
-                    MediaLogService::forceDeleted(
+                    MediaLogService::custom(
+                        action: LogActionEnum::FORCE_DELETED->value,
                         targetType: class_basename($model),
                         targetId: $model->id,
+                        status: StatusEnum::SUCCESS->value,
+                        type: 'crud',
                         description: LogActionEnum::FORCE_DELETED->value . ' (force)',
                         data: $model->toArray()
                     ),
@@ -97,7 +113,9 @@ trait LogsModelEvents
                     action: $errorAction,
                     targetType: class_basename($model),
                     targetId: $model->id ?? null,
-                    description: "Lỗi khi ghi log tự động: $errorAction",
+                    status: StatusEnum::ERROR->value,
+                    type: 'crud',
+                    description: "Lỗi khi ghi log tự động: $errorAction .\n Error: " . $e->getMessage(),
                     data: [
                         'error'      => $e->getMessage(),
                         'trace'      => collect($e->getTrace())->take(3)->toArray(),

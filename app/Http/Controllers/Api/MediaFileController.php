@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MediaFileResource;
 use App\Models\MediaFile;
@@ -21,9 +22,11 @@ class MediaFileController extends Controller
             return MediaFileResource::collection($files);
         } catch (\Exception $e) {
             MediaLogService::custom(
-                'Get Api File Error',
+                'Get Api Error',
                 'Media File',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Failed to fetch media files. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',
@@ -47,9 +50,11 @@ class MediaFileController extends Controller
             return new MediaFileResource($file);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             MediaLogService::custom(
-                'Get Api File Error',
+                'Get Api Error',
                 'Media File',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Media file not found. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',
@@ -61,9 +66,11 @@ class MediaFileController extends Controller
             ], 404);
         } catch (\Exception $e) {
             MediaLogService::custom(
-                'Get Api File Error',
+                'Get Api Error',
                 'Media File',
                 $request->user()->id ?? null,
+                StatusEnum::ERROR->value,
+                'system:api',
                 'Failed to fetch media file. Error: ' . $e->getMessage(),
                 [
                     'log_type' => 'system:api',

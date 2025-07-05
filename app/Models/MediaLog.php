@@ -15,6 +15,8 @@ class MediaLog extends Model
         'action',
         'target_type',
         'target_id',
+        'status',
+        'type',
         'description',
         'data',
         'ip',
