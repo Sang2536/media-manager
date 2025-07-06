@@ -7,4 +7,5 @@ import './filter.js';
 import './handle-delete.js';
 import './img.js';
 import './modal.js';
+import './selectField.js';
 import './tabbed-editor.js';

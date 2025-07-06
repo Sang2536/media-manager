@@ -11,7 +11,7 @@ class MediaMetadataRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,8 +22,19 @@ class MediaMetadataRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key' => 'required|string',
-            'value' => 'required|string',
+            'media_file_id' => ['required', 'exists:media_files,id'],
+            'metadata.*.key'           => ['required', 'string', 'max:255'],
+            'metadata.*.value'         => ['required', 'string', 'max:1000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'media_file_id.required'    => 'Bạn chưa chọn File.',
+            'media_file_id.exists'      => 'File không còn tồn tại.',
+            'metadata.*.key'            => 'Vui lòng nhập key',
+            'metadata.*.value'             => 'Vui lòng nhập value',
         ];
     }
 }
