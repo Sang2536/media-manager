@@ -99,6 +99,11 @@ class MediaFileController extends Controller
         // Lấy các tag ID đã gắn với image
         $selectedTags = $file->tags->pluck('id')->toArray();
 
+        $mediaFiles = MediaFile::with(['user', 'folder', 'tags', 'metadata'])
+            ->orderByDesc('created_at')
+            ->latest()
+            ->paginate(12);
+
         return view('media.files.edit', compact('file', 'folders', 'renderFolderOptions', 'tags', 'selectedTags'));
     }
 
